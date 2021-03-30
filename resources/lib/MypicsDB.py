@@ -1190,15 +1190,24 @@ class MyPictureDB(object):
             lD,lM,lS = lat.replace(" ","").replace("[","").replace("]","").split(",")[:3]
             LD,LM,LS = lon.replace(" ","").replace("[","").replace("]","").split(",")[:3]
             exec("lD=%s"%lD)
+            common.log("",  "lD - %s"%(lD), xbmc.LOGERROR )
             exec("lM=%s"%lM)
+            common.log("",  "lM - %s"%(lM), xbmc.LOGERROR )
             exec("lS=%s"%lS)
+            lS=eval(lS)
+            common.log("",  "lS - %s"%(lS), xbmc.LOGERROR )
             exec("LD=%s"%LD)
+            common.log("",  "LD - %s"%(LD), xbmc.LOGERROR )
             exec("LM=%s"%LM)
+            common.log("",  "LM - %s"%(LM), xbmc.LOGERROR )
             exec("LS=%s"%LS)
+            LS=eval(LS)
+            common.log("",  "LS - %s"%(LS), xbmc.LOGERROR )
             latitude =  (int(lD)+(int(lM)/60.0)+(int(lS)/3600.0)) * (latR=="S" and -1 or 1)
             longitude = (int(LD)+(int(LM)/60.0)+(int(LS)/3600.0)) * (lonR=="W" and -1 or 1)
             return (latitude,longitude)
         except Exception as msg:
+            common.log("",  "%s - %s"%(filepath, filename), xbmc.LOGERROR )
             common.log("",  "%s - %s"%(Exception,msg), xbmc.LOGERROR )
             return None
 
