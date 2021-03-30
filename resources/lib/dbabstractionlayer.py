@@ -87,11 +87,12 @@ def DBFactory(backend, db_name, *args):
     # default is to use Sqlite
     else:
         backend = 'sqlite'
-        try:
-            from sqlite3 import dbapi2 as database
-        except:
-            from pysqlite2 import dbapi2 as database        
-                
+        #try:
+        #    from sqlite3 import dbapi2 as database
+        #except:
+        #    from pysqlite2 import dbapi2 as database        
+        import sqlite3 as database
+        
     return backends[backend.lower()](db_name, *args)
     
    
@@ -160,7 +161,7 @@ class SqliteConnection(BaseConnection):
 
     def connect(self, db_name, *args):
         self.db_name = db_name
-        self.connection = database.connect(db_name)
+        self.connection = database.connect(db_name, timeout = 10)
 
 
     def cursor(self):        
@@ -177,6 +178,7 @@ class SqliteConnection(BaseConnection):
         
     def get_backend(self):
         return "sqlite"
+
 
 
 class BaseCursor(object):
@@ -225,10 +227,16 @@ class BaseCursor(object):
             common.log("BaseCursor.fetchall",  "%s - %s"%(Exception,str(msg)), xbmc.LOGERROR )
         return rows
 
+
+
     def request_with_binds(self, statement, bindvariables = []):
         return self.request(statement, bindvariables)
 
 
+
+    
+        
+        
     def request(self, statement, bindvariables = []):
         binds = []
         return_value= []
@@ -250,7 +258,7 @@ class BaseCursor(object):
                         return_value = self.fetchall()
                     except:
                         pass
-                self.connection.commit()
+                
             except Exception as msg:
                 try:
                     common.log("BaseCursor.request",  "The request failed :", xbmc.LOGERROR )

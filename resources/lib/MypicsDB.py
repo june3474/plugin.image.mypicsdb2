@@ -71,7 +71,8 @@ class MyPictureDB(object):
         # Test Version of DB
         try:
             strVersion = self.cur.request("Select strVersion from DBVersion")[0][0]
-        except:
+        except Exception as e:
+            common.log("BaseCursor.request",  "%s - %s"%(Exception,str(e)), xbmc.LOGERROR )
             strVersion = '1.0.0'
         
         return strVersion            

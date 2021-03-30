@@ -665,7 +665,7 @@ class Main:
                             params    = [("method","tagtype"),("tagtype",tag),("page","1"),("viewmode","view")],#paramètres
                             action    = "showtags",#action
                             iconimage = join(PIC_PATH,"folder_tags.png"),#icone
-                            contextmenu   = [('','')],
+                            #contextmenu   = [('','')],
                             total = total)#nb total d'éléments
         xbmcplugin.addSortMethod(int(sys.argv[1]), xbmcplugin.SORT_METHOD_LABEL)
         xbmcplugin.endOfDirectory(int(sys.argv[1]))
