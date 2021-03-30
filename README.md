@@ -8,13 +8,13 @@ a) You must add picture sources to XBMC
 
 b) Within MyPicsDB (not in the configuration) select menu "Paths of pictures folders" to add these paths to the database.
 
-Excluding paths
+### Excluding paths
 
 a) Add the exclude path(s) via menu "Paths of pictures folders".
 
 b) Rescan the paths which contain these added exclude paths to remove the pictures from MyPicsDB
 
-Excluding files
+### Excluding files
 
 a) This can be done in the plugin settings under "Files"
 
@@ -24,7 +24,7 @@ c) Rescan all paths.
 
 d) To concatenate different file/path name parts use the | sign.
 
-Cleanup
+### Cleanup
 
 a) After renaming a directory you must do a full rescan!
 
