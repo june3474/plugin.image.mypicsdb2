@@ -1,7 +1,7 @@
 # plugin.image.mypicsdb2
 MyPicsDB2 for Kodi with Python 3
 
-##1) How to include picture paths
+## 1) How to include picture paths
 Don't change the plugin configuration unless you know what you do!
 
 a) You must add picture sources to XBMC
@@ -20,7 +20,7 @@ d) To concatenate different file/path name parts use the | sign.
 Cleanup
 a) After renaming a directory you must do a full rescan!
 
-##2) MySql
+## 2) MySql
 a) You must create a database:
 CREATE DATABASE MyPicsDB CHARACTER SET utf8 COLLATE utf8_bin;
 
@@ -33,11 +33,11 @@ GRANT ALL ON *.* TO 'xbmc'@'%';
 d) Go to plugin settings and enable MySql. Set the correct user and password (they are case sensitive)!
 
 
-##3) Tag translation and combination of tags
+## 3) Tag translation and combination of tags
 Menu "translate your tags" lets you suppress tags (leave translation empty) or combine tags like 'Country/primary location name', 'Photoshop:Country' and 'Iptc4xmpExt:CountryName' to one 'Country' tag. 
 
 
-##4) General problems with MyPicsDB
+## 4) General problems with MyPicsDB
 If you have unexplainable problems like pictures don't get included into database and you're a long time user of MyPicsDB then it will be a good decision to delete the database and start with a new one.
 
 To do this select "Pictures->Add-ons", press "C" and select "Add-on settings". 
@@ -49,7 +49,7 @@ All tables (except table rootpaths which includes your entered picture paths) ar
 This means that the already entered paths are still available and that you can start a rescan with "Paths of picture folders"->"Scan all paths". 
 
 
-##5) Auto-update  MyPicsDB
+## 5) Auto-update  MyPicsDB
    Idea from Fungify 
    
    To auto update the database you can use the following XBMC command:
@@ -64,7 +64,7 @@ This means that the already entered paths are still available and that you can s
    wget --directory-prefix=tmp --http-user=<xbmc username> --http-passwd=<xbmc password> "http://Servername:Portnumber/xbmcCmds/xbmcHttp?command=ExecBuiltIn&parameter=RunScript("<full path to plugin>\plugin.image.mypicsdb\scanpath.py",--database)
 
    
-##6) For skinners
+## 6) For skinners
   Done by MikeBZH44
 
 a) For skinners, MyPicsDB can be called with following parameters to populate window properties :
