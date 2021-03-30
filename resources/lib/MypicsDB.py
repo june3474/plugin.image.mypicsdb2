@@ -941,7 +941,8 @@ class MyPictureDB(object):
         return [row for row in self.cur.request( """SELECT CollectionName FROM Collections""")]
 
 
-    def collection_new(self, colname):      
+    def collection_new(self, colname):     
+        colname = urllib.parse.unquote_plus(colname)
         if colname :
             self.cur.request( "INSERT INTO Collections(CollectionName) VALUES (?) ",(colname, ))
             self.con.commit()
@@ -949,7 +950,8 @@ class MyPictureDB(object):
             common.log( "collection_new", "User did not specify a name for the collection.")
 
 
-    def collection_delete(self, colname):      
+    def collection_delete(self, colname):
+        colname = urllib.parse.unquote_plus(colname)
         common.log( "collection_delete", "Name = %s"%colname)
         if colname:
             self.cur.request( """DELETE FROM FilesInCollections WHERE idCol=(SELECT idCol FROM Collections WHERE CollectionName=?)""", (colname,))
@@ -961,6 +963,7 @@ class MyPictureDB(object):
 
     def collection_get_playlist(self, colname):
         try:
+            colname = urllib.parse.unquote_plus(colname)
             playlist = self.cur.request("""SELECT PlayListName FROM Collections c where c.CollectionName = ?""",(colname,))[0][0]
         except:
             playlist = ''
@@ -969,7 +972,7 @@ class MyPictureDB(object):
 
     def collection_get_pics(self, colname, min_rating):
         try:
-
+            colname = urllib.parse.unquote_plus(colname)
             filter_name = self.cur.request( """SELECT f.strFilterName FROM Collections c, DynDataInCollections d, FilterWizard f 
                                                 WHERE d.idCol = c.idCol 
                                                   AND d.fkForeignKey = f.pkFilter
@@ -987,7 +990,9 @@ class MyPictureDB(object):
         return row
 
 
-    def collection_rename(self, colname,newname):   
+    def collection_rename(self, colname, newname):  
+        colname = urllib.parse.unquote_plus(colname)
+        newname = urllib.parse.unquote_plus(newname)
         common.log("", "collection_rename")
         if colname:
             self.cur.request( """UPDATE Collections SET CollectionName = ? WHERE CollectionName=? """, (newname, colname) )
@@ -996,18 +1001,25 @@ class MyPictureDB(object):
             common.log( "collection_rename",  "User did not specify a name for the collection")
 
     def collection_add_playlist(self, colname, playlist):   
+        colname = urllib.parse.unquote_plus(colname)
+        playlist = urllib.parse.unquote_plus(playlist)
         common.log("", "collection_add_playlist")
         if colname:
             self.cur.request( """UPDATE Collections SET PlayListName = ? WHERE CollectionName=? """, (playlist, colname) )
             self.con.commit()
         
     def collection_add_pic(self, colname, filepath, filename):    
-
+        colname = urllib.parse.unquote_plus(colname)
+        filepath = urllib.parse.unquote_plus(filepath)
+        filename = urllib.parse.unquote_plus(filename)
         self.cur.request( """INSERT INTO FilesInCollections(idCol,idFile) VALUES ( (SELECT idCol FROM Collections WHERE CollectionName=?) , (SELECT idFile FROM Files WHERE strPath=? AND strFilename=?) )""",(colname,filepath,filename) )
         self.con.commit()
 
 
     def collection_del_pic(self, colname, filepath, filename):
+        colname = urllib.parse.unquote_plus(colname)
+        filepath = urllib.parse.unquote_plus(filepath)
+        filename = urllib.parse.unquote_plus(filename)
         common.log("collection_del_pic","%s, %s, %s"%(colname, filepath, filename))
         self.cur.request( """DELETE FROM FilesInCollections WHERE idCol=(SELECT idCol FROM Collections WHERE CollectionName=?) AND idFile=(SELECT idFile FROM Files WHERE strPath=? AND strFilename=?)""",(colname, filepath, filename) )
         self.con.commit()
