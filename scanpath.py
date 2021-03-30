@@ -19,7 +19,7 @@ You should have received a copy of the GNU General Public License
 along with this program. If not, see <http://www.gnu.org/licenses/>.
 """
 
-__addonname__ = 'plugin.image.mypicsdb'
+__addonname__ = 'plugin.image.mypicsdb2'
 
 # xbmc modules
 import xbmc

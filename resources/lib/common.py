@@ -27,7 +27,7 @@ import xbmc, xbmcaddon
 try:
     __addonname__    = sys.modules[ "__main__" ].__addonname__
 except:
-    __addonname__ = 'plugin.image.mypicsdb'
+    __addonname__ = 'plugin.image.mypicsdb2'
 
     
 __settings__ = xbmcaddon.Addon(id=__addonname__)

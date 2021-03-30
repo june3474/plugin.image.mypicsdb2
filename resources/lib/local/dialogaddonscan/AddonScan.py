@@ -8,7 +8,7 @@ import xbmcgui
 from xbmcaddon import Addon
 
 
-__settings__  = Addon( "plugin.image.mypicsdb" )
+__settings__  = Addon( "plugin.image.mypicsdb2" )
 __addonDir__  = __settings__.getAddonInfo( "path" )
 
 XBMC_SKIN  = xbmc.getSkinDir()

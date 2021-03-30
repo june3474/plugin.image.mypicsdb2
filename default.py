@@ -2,7 +2,7 @@
 # -*- coding: utf8 -*-
 
 
-__addonname__ = 'plugin.image.mypicsdb'
+__addonname__ = 'plugin.image.mypicsdb2'
 
 # common depends on __addonname__
 import resources.lib.common as common

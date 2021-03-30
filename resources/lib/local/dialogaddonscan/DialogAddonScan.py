@@ -11,7 +11,7 @@ from .AddonScan import Window
 from .AddonScan import xbmcguiWindowError
 
 
-__settings__  = Addon( "plugin.image.mypicsdb" )
+__settings__  = Addon( "plugin.image.mypicsdb2" )
 __addonName__ = __settings__.getAddonInfo( "name" )
 
 
