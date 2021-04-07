@@ -72,16 +72,10 @@ class XMP_Tags(object):
         self.get_xmp_dirname = dirname
         self.get_xmp_picfile = picfile
         
-        try:
-            f = open(join(dirname,picfile), 'rb')
-        except:
-            path = join(dirname,picfile)
-            #path = common.smart_unicode(path).encode('utf-8')
-            f = open(path, 'rb')
+        f = open(join(dirname,picfile), 'r', encoding='utf-8', errors='ignore')
         content = str(f.read())
         f.close()
 
-        #print "__get_xmp_metadata"
         start = content.find("<" + xmptag)
         end   = content.rfind("</" + xmptag) + 4 + len(xmptag)
         
@@ -95,18 +89,15 @@ class XMP_Tags(object):
         #    getting  XMP   infos     #
         ###############################
         xmp = {}
+        if self.get_xmp_dirname != dirname or self.get_xmp_picfile != picfile:
+            self.__get_xmp_metadata(dirname, picfile)
+            
         for storedtag, tagname in tag_set.items():
-            #common.log("","Tag: " + tagname + " for " + picfile, xbmc.LOGINFO)
-            #common.log("","storedtag: " + storedtag + " for " + picfile, xbmc.LOGINFO)
-            if self.get_xmp_dirname != dirname or self.get_xmp_picfile != picfile:
-                self.__get_xmp_metadata(dirname, picfile)
 
             start = self.get_xmp_inner.find("<" + tagname)
             end   = self.get_xmp_inner.rfind("</" + tagname) + 4 + len(tagname)
             inner = self.get_xmp_inner[start:end]
-            
-            #common.log("", "Innertag : " + inner, xbmc.LOGINFO)
-            
+
             j = 0
             val_inner_tag=''
             if start != -1 and end != -1:
@@ -118,9 +109,7 @@ class XMP_Tags(object):
                         break
 
                     tag_found = inner[start:end]
-                    #common.log("","Found: Tag Name = " +  tagname, xbmc.LOGINFO)
-                    #common.log("","Found: Tag Value = " +  tag_found, xbmc.LOGINFO)
-                    #print tag_found
+
                     i = 0
                     val_inner_tag = ''
                     while i < len(tag_found):
@@ -129,27 +118,27 @@ class XMP_Tags(object):
                         i += 1
 
                     if len(val_inner_tag):
-                        #common.log("","if len(val_inner_tag) ", xbmc.LOGINFO)
                         value = val_inner_tag
+                        
                         # find inner tags and delete them  <rdf:li[^>]*?>(.*?)</rdf:li>
                         matchouter=re.compile('<rdf:Alt[^>]*?>(.*?)</rdf:Alt>',re.DOTALL).findall(value)
-                        #common.log("","after compile 1", xbmc.LOGINFO)
                         
                         if len(matchouter) == 0:
                             matchouter=re.compile('<rdf:Seq[^>]*?>(.*?)</rdf:Seq>',re.DOTALL).findall(value)
-                            #common.log("","after compile 2", xbmc.LOGINFO)
+
                         if len(matchouter) == 0:
                             matchouter=re.compile('<rdf:Bag[^>]*?>(.*?)</rdf:Bag>',re.DOTALL).findall(value)
-                            #common.log("","after compile 3", xbmc.LOGINFO)
+
                             
                         key = ''
                         
                         for outer in matchouter:
                             matchinner=re.compile('<rdf:li[^>]*?>(.*?)</rdf:li>',re.DOTALL).findall(outer)
-                            #common.log("","after compile 4", xbmc.LOGINFO)
+
                             for inner in matchinner:
                                 inner = inner.strip(' \t\n\r')
                                 if len(inner) > 0:
+
                                     # Test for face in mwg-rs:RegionList
                                     if 'mwg-rs:RegionList' == tagname:
                                         faces=re.compile('<rdf:Description[^>]*?mwg-rs:Name="([^>]*?)"[^>]*?mwg-rs:Type="Face"[^>]*?>',re.DOTALL).findall(inner)
@@ -178,7 +167,9 @@ class XMP_Tags(object):
                                 xmp[storedtag] += '||' + value
                             else:
                                 xmp[storedtag] = value
-
+                            
+                            common.log(storedtag,xmp[storedtag], xbmc.LOGDEBUG)
+                            
                     inner = inner[end+1:]
                     start = inner.find("<" + tagname)
                     inner = inner[start:]
@@ -190,17 +181,18 @@ class XMP_Tags(object):
                 start = self.get_xmp_inner.find(tagname+'="')
                 end   = self.get_xmp_inner.rfind("</" + tagname) + 4 + len(tagname)
                 inner = self.get_xmp_inner[start:]            
-                #print "Notfound: Tag Name = " +  tagname
+
                 matched=re.compile(tagname + '="(.*?)"',re.DOTALL).findall(inner)
                 for value in matched:
+                    
                     value = value.strip(' \t\n\r')
+
                     if len(value) > 0:
-                        #print "Found value = " + inner
-                        if len(value) > 0:
-                            value = HTMLParser.unescape(value)
-                            if storedtag in xmp:
-                                xmp[storedtag] += '||' + value
-                            else:
-                                xmp[storedtag] = value
-            
+                        value = HTMLParser.unescape(value)
+                        if storedtag in xmp:
+                            xmp[storedtag] += '||' + value
+                        else:
+                            xmp[storedtag] = value
+                    
+                        common.log(storedtag,xmp[storedtag], xbmc.LOGDEBUG)
         return xmp
