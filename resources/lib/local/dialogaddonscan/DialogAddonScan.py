@@ -14,6 +14,9 @@ from .AddonScan import xbmcguiWindowError
 __settings__  = Addon( "plugin.image.mypicsdb2" )
 __addonName__ = __settings__.getAddonInfo( "name" )
 
+# common depends on __addonname__
+import resources.lib.common as common
+
 
 class AddonScanOrg( Window ):
     def __init__( self, parent_win=None, **kwargs ):
@@ -73,31 +76,37 @@ class AddonScanOrg( Window ):
 class AddonScan(  ):
 
     def close( self ):
-        if self.dialog is None:
-            self.addonscan.close()
-        else:
-            self.dialog.close()
+        if common.getaddon_setting('popupScan')=='true':
+            if self.dialog is None:
+                self.addonscan.close()
+            else:
+                #self.dialog.clearProperty( "DialogAddonScan.IsAlive" )
+                self.dialog.close()
         
     def create( self, line1="", line2="" ):
-        try:
-            self.dialog = xbmcgui.DialogProgressBG()
-            self.dialog.create(line1, line2)
-        except:
-            self.dialog = None
-            self.addonscan = AddonScanOrg()
-            self.addonscan.create( line1, line2 )
+        if common.getaddon_setting('popupScan')=='true':
+            try:
+                self.dialog = xbmcgui.DialogProgressBG()
+                self.dialog.create(line1, line2)
+                #self.dialog.setProperty( "DialogAddonScan.IsAlive", "true" )
+            except:
+                self.dialog = None
+                self.addonscan = AddonScanOrg()
+                self.addonscan.create( line1, line2 )
         
     def iscanceled( self ):
-        if self.dialog is None:
-            return self.addonscan.iscanceled()
-        else:
-            return self.dialog.isFinished()
+        if common.getaddon_setting('popupScan')=='true':
+            if self.dialog is None:
+                return self.addonscan.iscanceled()
+            else:
+                return self.dialog.isFinished()
     
     def update( self, percent1=0, percent2=0, line1="", line2="" ):
-        if self.dialog is None:
-            self.addonscan.update(percent1, percent2, line1, line2)
-        else :
-            self.dialog.update(percent1, line1, line2)
+        if common.getaddon_setting('popupScan')=='true':
+            if self.dialog is None:
+                self.addonscan.update(percent1, percent2, line1, line2)
+            else :
+                self.dialog.update(percent1, line1, line2)
         
         
 def Demo():

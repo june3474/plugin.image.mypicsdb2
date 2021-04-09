@@ -1060,7 +1060,7 @@ class Main:
                     except:
                         common.log("Main.show_roots", 'MPDB.add_root_folder failed for "%s"'%source, xbmc.LOGERROR)                
 
-                if not(xbmc.getInfoLabel( "Window.Property(DialogAddonScan.IsAlive)" ) == "true"):
+                if common.getaddon_setting('scanning')=='false':
                     common.run_script("%s,--refresh"% join( home, "scanpath.py"))
                     return
 
@@ -1095,7 +1095,7 @@ class Main:
                     common.log("Main.show_roots", 'MPDB.add_root_folder failed for "%s"'%newroot, xbmc.LOGERROR)
                 common.show_notification(common.getstring(30000),common.getstring(30204),3000,join(home,"icon.png"))
                 
-                if not(xbmc.getInfoLabel( "Window.Property(DialogAddonScan.IsAlive)" ) == "true"): #si dialogaddonscan n'est pas en cours d'utilisation...
+                if common.getaddon_setting('scanning')=='false':
                     if dialog.yesno(common.getstring(30000),common.getstring(30206)):#do a scan now ?
                         if newroot.startswith('multipath://'):
                             common.log("Main.show_roots", "Multipaths" )
@@ -1132,7 +1132,7 @@ class Main:
                 common.log("Main.show_roots", 'delroot IndexError %s - %s'%( IndexError,msg), xbmc.LOGERROR )
 
         elif self.args.do=="rootclic":
-            if not(xbmc.getInfoLabel( "Window.Property(DialogAddonScan.IsAlive)" ) == "true"): 
+            if common.getaddon_setting('scanning')=='false':
                 if str(self.args.exclude)=="0":
                     path,recursive,update,exclude = MPDB.get_root_folders(self.args.rootpath) 
                     common.run_script("%s,%s --rootpath=%s"%( join( home, "scanpath.py"),recursive and "-r, " or "",common.quote_param(path)))
@@ -1143,15 +1143,14 @@ class Main:
                 #dialogaddonscan était en cours d'utilisation, on return
                 return
         elif self.args.do=="scanall":
-            if not(xbmc.getInfoLabel( "Window.Property(DialogAddonScan.IsAlive)" ) == "true"):
-
+            if common.getaddon_setting('scanning')=='false':
                 common.run_script("%s,--database"% join( home, "scanpath.py"))
                 return
             else:
                 #dialogaddonscan était en cours d'utilisation, on return
                 return
         elif self.args.do=="refreshpaths":
-            if not(xbmc.getInfoLabel( "Window.Property(DialogAddonScan.IsAlive)" ) == "true"):
+            if common.getaddon_setting('scanning')=='false':
                 common.run_script("%s,--refresh"% join( home, "scanpath.py"))
                 return
 
@@ -1867,7 +1866,7 @@ if __name__=="__main__":
             MPDB.version_table()
 
         if common.getaddon_setting('bootscan')=='true':
-            if not(xbmc.getInfoLabel( "Window.Property(DialogAddonScan.IsAlive)" ) == "true"):
+            if common.getaddon_setting('scanning')=='false':
                 common.run_script("%s,--database"%join( home, "scanpath.py") )
                 xbmc.executebuiltin( "Container.Update(\"%s?action='showhome'&viewmode='view'\" ,)"%(sys.argv[0]) , )
         else:

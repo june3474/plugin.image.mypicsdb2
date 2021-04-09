@@ -120,6 +120,16 @@ msgctxt "#30035"
 msgid "Number of pics per page"
 msgstr "Bilder pro Seite"
 
+msgctxt "#30036"
+msgid "Popup dialog during scan"
+msgstr "Popup-Dialog während des Scans"
+
+msgctxt "#30037"
+msgid "Popup dialog at the end of scan"
+msgstr "Popup-Dialog am Ende des Scans"
+
+#empty strings from id 30038 to 30039
+
 msgctxt "#30040"
 msgid "Only display pictures with rating of at least"
 msgstr "Minimale Bewertung der anzuzeigenden Bilder"

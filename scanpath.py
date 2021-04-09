@@ -97,64 +97,78 @@ class VFSScanner:
 
     def dispatcher(self, options):
 
-        self.options = options
+        try:
+            if common.getaddon_setting('scanning')=='false':
+                common.setaddon_setting("scanning", "true")
+                self.options = options
+                
+                common.log("VFSScanner.dispatcher", "dispatcher started", xbmc.LOGINFO)
+                
+                if self.options.rootpath:
+                    self.options.rootpath = common.smart_utf8(unquote_plus( self.options.rootpath)).replace("\\\\", "\\").replace("\\\\", "\\").replace("\\'", "\'")
+                    common.log("VFSScanner.dispatcher", 'Adding path "%s"'%self.options.rootpath, xbmc.LOGINFO)
+                    self.scan = AddonScan()
+                    self.action = common.getstring(30244)#adding
+                    self.scan.create( common.getstring(30000) )
+                    self.current_root_entry = 1
+                    self.total_root_entries = 1
+                    self.scan.update(0,0,
+                                common.getstring(30000)+" ["+common.getstring(30241)+"]",#MyPicture Database [preparing]
+                                common.getstring(30247))#please wait...
+                    
+                    self._countfiles(self.options.rootpath)
+                    self.total_root_entries = 1
+                    self._addpath(self.options.rootpath, None, self.options.recursive, True)
+                    
+                    self.scan.close()
 
-        if self.options.rootpath:
-            self.options.rootpath = common.smart_utf8(unquote_plus( self.options.rootpath)).replace("\\\\", "\\").replace("\\\\", "\\").replace("\\'", "\'")
-            common.log("VFSScanner.dispatcher", 'Adding path "%s"'%self.options.rootpath, xbmc.LOGINFO)
-            self.scan = AddonScan()
-            self.action = common.getstring(30244)#adding
-            self.scan.create( common.getstring(30000) )
-            self.current_root_entry = 1
-            self.total_root_entries = 1
-            self.scan.update(0,0,
-                        common.getstring(30000)+" ["+common.getstring(30241)+"]",#MyPicture Database [preparing]
-                        common.getstring(30247))#please wait...
-            
-            self._countfiles(self.options.rootpath)
-            self.total_root_entries = 1
-            self._addpath(self.options.rootpath, None, self.options.recursive, True)
-            
-            self.scan.close()
+                elif self.options.database or self.options.refresh:
+                    paths = self.mpdb.get_all_root_folders()
+                    common.log("VFSScanner.dispatcher", "Database refresh started", xbmc.LOGINFO)
+                    self.action = common.getstring(30242)#Updating
+                    if paths:
+                        self.scan = AddonScan()
+                        self.scan.create( common.getstring(30000) )
+                        self.current_root_entry = 0
+                        self.total_root_entries = 0
+                        self.scan.update(0,0,
+                                    common.getstring(30000)+" ["+common.getstring(30241)+"]",#MyPicture Database [preparing]
+                                    common.getstring(30247))#please wait...
+                        for path,recursive,update,exclude in paths:
+                            if exclude==0:
+                                self.total_root_entries += 1
+                                self._countfiles(path,False)
 
-        elif self.options.database or self.options.refresh:
-            paths = self.mpdb.get_all_root_folders()
-            common.log("VFSScanner.dispatcher", "Database refresh started", xbmc.LOGINFO)
-            self.action = common.getstring(30242)#Updating
-            if paths:
-                self.scan = AddonScan()
-                self.scan.create( common.getstring(30000) )
-                self.current_root_entry = 0
-                self.total_root_entries = 0
-                self.scan.update(0,0,
-                            common.getstring(30000)+" ["+common.getstring(30241)+"]",#MyPicture Database [preparing]
-                            common.getstring(30247))#please wait...
-                for path,recursive,update,exclude in paths:
-                    if exclude==0:
-                        self.total_root_entries += 1
-                        self._countfiles(path,False)
+                        for path,recursive,update,exclude in paths:
+                            if exclude==0:
+                                try:
+                                    self.current_root_entry += 1
+                                    self._addpath(path, None, recursive, update)
+                                except:
+                                    print_exc()
 
-                for path,recursive,update,exclude in paths:
-                    if exclude==0:
-                        try:
-                            self.current_root_entry += 1
-                            self._addpath(path, None, recursive, update)
-                        except:
-                            print_exc()
+                        self.scan.close()
 
-                self.scan.close()
+                # Set default translation for tag types
+                self.mpdb.default_tagtypes_translation()
+                self.mpdb.cleanup_keywords()
 
-        # Set default translation for tag types
-        self.mpdb.default_tagtypes_translation()
-        self.mpdb.cleanup_keywords()
+                # delete all entries with "sha is null"
+                self.picsdeleted += self.mpdb.del_pics_wo_sha(self.scan_is_cancelled)
 
-        # delete all entries with "sha is null"
-        self.picsdeleted += self.mpdb.del_pics_wo_sha(self.scan_is_cancelled)
+                common.log("VFSScanner.dispatcher", common.getstring(30248)%(self.picsscanned,self.picsadded,self.picsdeleted,self.picsupdated), xbmc.LOGINFO)
+                
+                if common.getaddon_setting('popupEndOfScan')=='true':
+                    common.show_notification(common.getstring(30000), common.getstring(30248)%(self.picsscanned,self.picsadded,self.picsdeleted,self.picsupdated) )
 
-        common.log("VFSScanner.dispatcher", common.getstring(30248)%(self.picsscanned,self.picsadded,self.picsdeleted,self.picsupdated), xbmc.LOGINFO)
-        common.show_notification(common.getstring(30000), common.getstring(30248)%(self.picsscanned,self.picsadded,self.picsdeleted,self.picsupdated) )
-        
+                common.setaddon_setting("scanning", "false")
+                
+            else:    
+                common.log("VFSScanner.dispatcher", "dispatcher already running", xbmc.LOGINFO)
 
+        except Exception as msg:
+            common.log("Main.add_directory",  "%s - %s"%(Exception,str(msg)), xbmc.LOGERROR )
+            common.setaddon_setting("scanning", "false")
 
     def _countfiles(self, path, reset = True, recursive = True):
         if reset:
@@ -481,7 +495,7 @@ class VFSScanner:
                       ]
 
         # try to open picfile in modify/write mode. Windows needs this for memory mapped file support.
-        f=open(picfile,"r+b")
+        f=open(picfile,"rb")
         common.log( "VFSScanner._get_exif()", 'Calling function EXIF_file for "%s"'%picfile)
         tags = EXIF_file(f, details=False)
         if not tags:

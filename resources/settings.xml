@@ -11,6 +11,9 @@
     
     <setting type="lsep" label="" />
     <setting id="initDB" type="bool" label="30025" default="false" />
+    <setting type="lsep" label="" />
+    <setting id="popupScan" type="bool" label="30036" default="true" />
+    <setting id="popupEndOfScan" type="bool" label="30037" default="true" />
     <!-- 
     <setting type="lsep" label="" /> 
     <setting type="action" label="30027" option="close" action="RunScript(special://home/addons/script.module.dialogaddonscan/lib/DialogAddonScan.py,opensettins)" default="" />
@@ -40,6 +43,7 @@
   <category label="30650">
     <!-- pour recréer la base lors du scan -->
     <setting id="debugging" type="bool" label="30651" default="false" />
+    <setting id="scanning" type="bool" label="" visible="false" default="false">false</setting>
   </category>
   <category label="30660">
     <setting label="30661" type="labelenum" id="db_backend" lvalues="30662|30663"/>
