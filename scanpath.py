@@ -393,7 +393,7 @@ class VFSScanner:
 
     def _get_metas(self, fullpath):
         picentry = {}
-        common.log( "VFSScanner._get_metas()", 'Reading tags from "%s"'%fullpath, xbmc.LOGINFO)
+        common.log( "VFSScanner._get_metas()", 'Reading tags from "%s"'%fullpath, xbmc.LOGDEBUG)
         extension = os.path.splitext(fullpath)[1].upper()
         if extension in self.picture_extensions:
             ###############################
