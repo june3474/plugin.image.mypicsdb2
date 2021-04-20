@@ -28,7 +28,7 @@ import resources.lib.dbabstractionlayer as dblayer
 import urllib
 
 
-DB_VERSION        = '13.3.1'
+DB_VERSION        = '19.0.12'
 
 lists_separator   = "||"
 
@@ -129,7 +129,7 @@ class MyPictureDB(object):
                 pass
         if common.check_version(strVersion, DB_VERSION) >0:
             try:
-                common.log("MPDB.version_table", "Updating to version 13.3.0" ) 
+                common.log("MPDB.version_table", "Updating to version %s"%DB_VERSION ) 
                 self.cur.execute("Update Files set Sha = ''")
                 self.cur.execute("UPDATE DBVersion set strVersion = '%s'"%DB_VERSION)
                 self.con.commit()                
