@@ -29,6 +29,9 @@ d) To concatenate different file/path name parts use the | sign.
 a) After renaming a directory you must do a full rescan!
 
 ## 2) MySql
+
+ATTENTION: Currently not supported!
+
 a) You must create a database:
 CREATE DATABASE MyPicsDB CHARACTER SET utf8 COLLATE utf8_bin;
 
