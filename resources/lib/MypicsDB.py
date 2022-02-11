@@ -28,7 +28,7 @@ import resources.lib.dbabstractionlayer as dblayer
 import urllib
 
 
-DB_VERSION        = '19.0.12'
+DB_VERSION        = '19.1.0'
 
 lists_separator   = "||"
 
@@ -64,9 +64,12 @@ class MyPictureDB(object):
             self.db_port    = ''
             
         #common.log('', "Used DB Backend = " + self.db_backend)
-        self.con = dblayer.DBFactory(self.db_backend, self.db_name, self.db_user, self.db_pass, self.db_address, self.db_port)
-        self.cur = self.con.cursor()
-        
+        try:
+            self.con = dblayer.DBFactory(self.db_backend, self.db_name, self.db_user, self.db_pass, self.db_address, self.db_port)
+            self.cur = self.con.cursor()
+        except Exception as msg:
+            common.log("MyPictureDB.construtor",  "%s - %s"%(Exception,str(msg)), xbmc.LOGERROR )
+            
     def DB_version(self):
         # Test Version of DB
         try:
@@ -127,14 +130,21 @@ class MyPictureDB(object):
                 self.con.commit()                
             except:
                 pass
+                
         if common.check_version(strVersion, DB_VERSION) >0:
             try:
                 common.log("MPDB.version_table", "Updating to version %s"%DB_VERSION ) 
-                self.cur.execute("Update Files set Sha = ''")
-                self.cur.execute("UPDATE DBVersion set strVersion = '%s'"%DB_VERSION)
-                self.con.commit()                
+                if self.con.get_backend() != "mysql":
+                    common.log("MPDB.version_table", "Rename column Recursive to Recursivescan in table RootPaths")
+                    self.cur.execute("ALTER TABLE RootPaths RENAME TO RootPaths_bak")
+                    self.cur.execute("CREATE TABLE Rootpaths (idRoot INTEGER %s, Path %s UNIQUE NOT NULL, RecursiveScan INTEGER NOT NULL, Remove INTEGER NOT NULL, Exclude INTEGER DEFAULT 0)"%(self.con.get_ddl_primary_key(), self.con.get_ddl_varchar(255)))
+                    self.cur.execute("INSERT INTO Rootpaths SELECT * FROM RootPaths_bak")
+                    self.cur.execute("DROP TABLE RootPaths_bak")
+                    self.cur.execute("UPDATE DBVersion set strVersion = '%s'"%DB_VERSION)
+                    self.con.commit()                
             except:
-                pass        
+                pass     
+     
         else:
             common.log("MPDB.version_table", "MyPicsDB database contains already current schema" )
             
@@ -253,7 +263,8 @@ class MyPictureDB(object):
 
         #table 'Rootpaths'
         try:
-            self.cur.execute("CREATE TABLE Rootpaths (idRoot INTEGER %s, Path %s UNIQUE NOT NULL, Recursive INTEGER NOT NULL, Remove INTEGER NOT NULL, Exclude INTEGER DEFAULT 0)"%(self.con.get_ddl_primary_key(), self.con.get_ddl_varchar(255)))
+            #common.log("MPDB.make_new_base","CREATE TABLE Rootpaths (idRoot INTEGER %s, Path %s UNIQUE NOT NULL, Recursive INTEGER NOT NULL, Remove INTEGER NOT NULL, Exclude INTEGER DEFAULT 0)"%(self.con.get_ddl_primary_key(), self.con.get_ddl_varchar(255)), xbmc.LOGERROR)
+            self.cur.execute("CREATE TABLE Rootpaths (idRoot INTEGER %s, Path %s UNIQUE NOT NULL, RecursiveScan INTEGER NOT NULL, Remove INTEGER NOT NULL, Exclude INTEGER DEFAULT 0)"%(self.con.get_ddl_primary_key(), self.con.get_ddl_varchar(255)))
         except Exception as msg:
             if str(msg).find("already exists") > -1:
                 pass
@@ -1063,8 +1074,8 @@ class MyPictureDB(object):
 
     def period_add(self, periodname, datestart, dateend):
         if self.con.get_backend() == "mysql":
-            datestart = "date_format('%s', '%%Y-%%m-%%d %%H:%%i:%%S')"%datestart
-            dateend   = "date_format('%s', '%%Y-%%m-%%d %%H:%%i:%%S')"%dateend
+            datestart = "'%s 00:00:00'"%datestart
+            dateend   = "'%s 00:00:00'"%dateend
             common.log("", "datestart = %s"%datestart)
             common.log("", "dateend   = %s"%dateend)
         else:
@@ -1074,21 +1085,25 @@ class MyPictureDB(object):
             common.log("", "dateend   = %s"%dateend)
 
         insert = """INSERT INTO Periodes(PeriodeName,DateStart,DateEnd) VALUES (?,%s,%s)"""%(datestart,dateend)
-        common.log("", insert)
         self.cur.request( insert, (periodname,) )
         self.con.commit()
         return
 
 
     def period_delete(self, periodname):
+        periodname = urllib.parse.unquote_plus(periodname);
         self.cur.request( """DELETE FROM Periodes WHERE PeriodeName=? """,(periodname,) )
         self.con.commit()
         return
 
 
     def period_rename(self, periodname, newname, newdatestart, newdateend):
+        periodname = urllib.parse.unquote_plus(periodname)
+        
         if self.con.get_backend() == "mysql":
-            self.cur.request( """UPDATE Periodes SET PeriodeName = ?,DateStart = date_format(?, '%%Y-%%m-%%d') , DateEnd = date_format(?, '%%Y-%%m-%%d') WHERE PeriodeName=? """,(newname,newdatestart,newdateend,periodname) )
+            newdatestart = "'%s 00:00:00'"%newdatestart
+            newdateend   = "'%s 00:00:00'"%newdateend
+            self.cur.request( """UPDATE Periodes SET PeriodeName = ? , DateStart = %s , DateEnd = %s  WHERE PeriodeName=? """%(newdatestart,newdateend),(newname,periodname) )
         else:
             self.cur.request( """UPDATE Periodes SET PeriodeName = ?,DateStart = datetime(?) , DateEnd = datetime(?) WHERE PeriodeName=? """,(newname,newdatestart,newdateend,periodname) )
         self.con.commit()
@@ -1190,19 +1205,19 @@ class MyPictureDB(object):
             lD,lM,lS = lat.replace(" ","").replace("[","").replace("]","").split(",")[:3]
             LD,LM,LS = lon.replace(" ","").replace("[","").replace("]","").split(",")[:3]
             exec("lD=%s"%lD)
-            common.log("",  "lD - %s"%(lD), xbmc.LOGDEBUG )
+            common.log("",  "lD - %s"%(lD), xbmc.LOGERROR )
             exec("lM=%s"%lM)
-            common.log("",  "lM - %s"%(lM), xbmc.LOGDEBUG )
+            common.log("",  "lM - %s"%(lM), xbmc.LOGERROR )
             exec("lS=%s"%lS)
             lS=eval(lS)
-            common.log("",  "lS - %s"%(lS), xbmc.LOGDEBUG )
+            common.log("",  "lS - %s"%(lS), xbmc.LOGERROR )
             exec("LD=%s"%LD)
-            common.log("",  "LD - %s"%(LD), xbmc.LOGDEBUG )
+            common.log("",  "LD - %s"%(LD), xbmc.LOGERROR )
             exec("LM=%s"%LM)
-            common.log("",  "LM - %s"%(LM), xbmc.LOGDEBUG )
+            common.log("",  "LM - %s"%(LM), xbmc.LOGERROR )
             exec("LS=%s"%LS)
             LS=eval(LS)
-            common.log("",  "LS - %s"%(LS), xbmc.LOGDEBUG )
+            common.log("",  "LS - %s"%(LS), xbmc.LOGERROR )
             latitude =  (int(lD)+(int(lM)/60.0)+(int(lS)/3600.0)) * (latR=="S" and -1 or 1)
             longitude = (int(LD)+(int(LM)/60.0)+(int(LS)/3600.0)) * (lonR=="W" and -1 or 1)
             return (latitude,longitude)
@@ -1213,12 +1228,12 @@ class MyPictureDB(object):
 
     def get_all_root_folders(self):
         "return Folders which are root for scanning pictures"
-        return [row for row in self.cur.request( """SELECT path,recursive,remove,exclude FROM Rootpaths ORDER BY path""")]
+        return [row for row in self.cur.request( """SELECT path,recursivescan,remove,exclude FROM Rootpaths ORDER BY path""")]
     
     def add_root_folder(self, path, recursive, remove, exclude):
         "add the path root inside the database. Recursive is 0/1 for recursive scan, remove is 0/1 for removing Files that are not physically in the place"
         self.cleanup_keywords()
-        self.cur.request( """INSERT INTO Rootpaths(path,recursive,remove,exclude) VALUES (?,?,?,?)""",(common.smart_unicode(path),recursive,remove,exclude) )
+        self.cur.request( """INSERT INTO Rootpaths(path,recursivescan,remove,exclude) VALUES (?,?,?,?)""",(common.smart_unicode(path),recursive,remove,exclude) )
         self.con.commit()
         common.log( "add_root_folder", "%s"%common.smart_utf8(path))
     
@@ -1227,7 +1242,7 @@ class MyPictureDB(object):
         path = urllib.parse.unquote_plus( path )
         
         try:
-            rows = [row for row in self.cur.request( """SELECT path,recursive,remove,exclude FROM Rootpaths WHERE path=? """, (path,) )][0]
+            rows = [row for row in self.cur.request( """SELECT path,recursivescan,remove,exclude FROM Rootpaths WHERE path=? """, (path,) )][0]
         except Exception as msg:
             rows = []           
         return rows
@@ -1645,6 +1660,8 @@ class MyPictureDB(object):
                 Smodifier = "''"
         
             request = """SELECT strPath,strFilename FROM Files WHERE datetime(ImageDateTime) BETWEEN datetime('%s',%s) AND datetime('%s',%s)"""%(DS,Smodifier,DE,Emodifier) + rating_select + """ ORDER BY ImageDateTime ASC"""
+        
+        common.log( "search_between_dates", request)
         return [row for row in self.cur.request(request)]
 
         

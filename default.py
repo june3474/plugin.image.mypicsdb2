@@ -10,6 +10,7 @@ import resources.lib.common as common
 import os, sys, time, re
 from os.path import join,isfile,basename,dirname,splitext
 from urllib.parse import unquote
+import urllib
 
 from time import strftime,strptime
 from traceback import print_exc
@@ -84,7 +85,10 @@ global MPDB
 class Main:
     def __init__(self):
         self.get_args()
-        MPDB = MypicsDB.MyPictureDB()
+        try:
+            MPDB = MypicsDB.MyPictureDB()
+        except Exception as msg:
+            common.log("Main.add_directory",  "%s - %s"%(Exception,str(msg)), xbmc.LOGERROR )
 
 
     def get_args(self):
@@ -1248,7 +1252,7 @@ class Main:
 
     def period_rename(self):
         #TODO : test if 'datestart' is before 'dateend'
-        periodname = self.args.periodname
+        periodname = urllib.parse.unquote_plus(self.args.periodname)
         datestart,dateend = MPDB.cur.request_with_binds( """SELECT DateStart,DateEnd FROM Periodes WHERE PeriodeName=? """, (periodname,) )[0]
         common.log("", "datestart = %s"%datestart)
         common.log("", "dateend = %s"%dateend)

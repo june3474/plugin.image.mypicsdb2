@@ -54,7 +54,7 @@ class Viewer:
     def getText( self ):
         try:
             if self.text == "":
-                txt = open( os.path.join( ADDON_DIR, "Readme.txt" ) ).read()
+                txt = open( os.path.join( ADDON_DIR, "Readme.md" ) ).read()
             else:
                 txt = self.text
 

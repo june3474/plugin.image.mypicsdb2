@@ -82,7 +82,7 @@ def DBFactory(backend, db_name, *args):
 
     if backend.lower() == 'mysql':
 
-        import local.mysql.connector as database
+        import mysql.connector as database
             
     # default is to use Sqlite
     else:
@@ -132,7 +132,7 @@ class MysqlConnection(BaseConnection):
             self.db_address = db_address
 
         self.connection = database.connect(db = db_name, user = db_user, passwd = db_pass, host = db_address, port = int(db_port))
-        self.connection.set_charset('utf8')
+        
         self.connection.set_unicode(True)
 
 
@@ -228,7 +228,22 @@ class BaseCursor(object):
         return rows
 
 
+    def fetchall_request(self):
+        rows = []
 
+        result = self.cursor.fetchall()
+        for row in result:
+            cols = []
+            for col in row:
+                if isinstance(col, datetime.date):
+                    if col == '0000-00-00':
+                        col = ''
+
+                cols.append(col)
+            rows.append(cols)
+
+        return rows
+        
     def request_with_binds(self, statement, bindvariables = []):
         return self.request(statement, bindvariables)
 
@@ -248,14 +263,14 @@ class BaseCursor(object):
                         binds.append(value)
                     self.execute( statement, binds )
                     try:
-                        return_value = self.fetchall()
+                        return_value = self.fetchall_request()
                     except:
                         pass
 
                 else:
                     self.execute( statement, binds )
                     try:
-                        return_value = self.fetchall()
+                        return_value = self.fetchall_request()
                     except:
                         pass
                 
