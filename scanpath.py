@@ -612,4 +612,6 @@ if __name__=="__main__":
 
     obj = VFSScanner()
     obj.dispatcher(options)
-
+    obj.mpdb.cur.close()
+    obj.mpdb.con.disconnect()
+    del obj.mpdb
