@@ -28,7 +28,7 @@ import resources.lib.dbabstractionlayer as dblayer
 import urllib
 
 
-DB_VERSION        = '19.1.0'
+DB_VERSION        = '19.2.2'
 
 lists_separator   = "||"
 
@@ -63,13 +63,20 @@ class MyPictureDB(object):
             self.db_address = ''
             self.db_port    = ''
             
-        #common.log('', "Used DB Backend = " + self.db_backend)
+        common.log('MyPictureDB.construtor', "Used DB Backend = " + self.db_backend)
         try:
             self.con = dblayer.DBFactory(self.db_backend, self.db_name, self.db_user, self.db_pass, self.db_address, self.db_port)
             self.cur = self.con.cursor()
         except Exception as msg:
             common.log("MyPictureDB.construtor",  "%s - %s"%(Exception,str(msg)), xbmc.LOGERROR )
+            dialog = xbmcgui.Dialog()
+            dialog.ok(common.getstring(30000), "Database connect failed. Check your settings")
+            raise msg 
             
+    def __del__(self):
+        self.cur.close()
+        self.con.disconnect()
+        
     def DB_version(self):
         # Test Version of DB
         try:
@@ -89,7 +96,7 @@ class MyPictureDB(object):
         if common.check_version(strVersion, '12.0.0') > 0:
             dialog = xbmcgui.Dialog()
             dialog.ok(common.getstring(30000), "Database will be updated. You must re-scan your folders")
-            common.log("MPDB.Versiversion_tableonTable", "MyPicsDB database will be updated", xbmc.LOGINFO )
+            common.log("MPDB.version_table", "MyPicsDB database will be updated", xbmc.LOGINFO )
             self.make_new_base(True)
             
         strVersion = self.DB_version()
@@ -131,19 +138,27 @@ class MyPictureDB(object):
             except:
                 pass
                 
+        if common.check_version(strVersion, '19.1.1') >0:
+            try:
+                common.log("MPDB.version_table", "Updating to version %s"%DB_VERSION ) 
+                #if self.con.get_backend() != "mysql":
+                common.log("MPDB.version_table", "Rename column Recursive to Recursivescan in table RootPaths")
+                self.cur.execute("ALTER TABLE Rootpaths RENAME TO Rootpaths_bak")
+                self.cur.execute("CREATE TABLE Rootpaths (idRoot INTEGER %s, Path %s UNIQUE NOT NULL, RecursiveScan INTEGER NOT NULL, Remove INTEGER NOT NULL, Exclude INTEGER DEFAULT 0)"%(self.con.get_ddl_primary_key(), self.con.get_ddl_varchar(255)))
+                self.cur.execute("INSERT INTO Rootpaths SELECT * FROM Rootpaths_bak")
+                self.cur.execute("DROP TABLE Rootpaths_bak")
+                self.cur.execute("UPDATE DBVersion set strVersion = '%s'"%DB_VERSION)
+                self.con.commit()                
+            except:
+                pass     
+                
         if common.check_version(strVersion, DB_VERSION) >0:
             try:
                 common.log("MPDB.version_table", "Updating to version %s"%DB_VERSION ) 
-                if self.con.get_backend() != "mysql":
-                    common.log("MPDB.version_table", "Rename column Recursive to Recursivescan in table RootPaths")
-                    self.cur.execute("ALTER TABLE RootPaths RENAME TO RootPaths_bak")
-                    self.cur.execute("CREATE TABLE Rootpaths (idRoot INTEGER %s, Path %s UNIQUE NOT NULL, RecursiveScan INTEGER NOT NULL, Remove INTEGER NOT NULL, Exclude INTEGER DEFAULT 0)"%(self.con.get_ddl_primary_key(), self.con.get_ddl_varchar(255)))
-                    self.cur.execute("INSERT INTO Rootpaths SELECT * FROM RootPaths_bak")
-                    self.cur.execute("DROP TABLE RootPaths_bak")
-                    self.cur.execute("UPDATE DBVersion set strVersion = '%s'"%DB_VERSION)
-                    self.con.commit()                
+                self.cur.execute("UPDATE DBVersion set strVersion = '%s'"%DB_VERSION)
+                self.con.commit()                
             except:
-                pass     
+                pass                   
      
         else:
             common.log("MPDB.version_table", "MyPicsDB database contains already current schema" )
@@ -153,17 +168,17 @@ class MyPictureDB(object):
     # new tag type YYYY-MM in version 2.10
     def update_yyyy_mm_tags(self):   
 
-        dictionnary = {}
+        dictionary = {}
         common.show_notification(common.getstring(30000), 'DB-Update', 2000)
         rows = [row for row in self.cur.request("SELECT idFile, strFilename, strPath, ImageDateTime FROM Files")]
         
         for row in rows:
-            dictionnary['YYYY-MM'] = str(row[3])[:7]
+            dictionary['YYYY-MM'] = str(row[3])[:7]
             try:
-                self.tags_insert( row[0], row[1], row[2], dictionnary)
-                common.log( 'MPDB.update_yyyy_mm_tags()', 'Tag YYYY-MM with value %s inserted for "%s"'%(dictionnary['YYYY-MM'], row[1]) )
+                self.tags_insert( row[0], row[1], row[2], dictionary)
+                common.log( 'MPDB.update_yyyy_mm_tags()', 'Tag YYYY-MM with value %s inserted for "%s"'%(dictionary['YYYY-MM'], row[1]) )
             except:
-                common.log( 'MPDB.update_yyyy_mm_tags()', 'Tag YYYY-MM with value %s NOT inserted for "%s"'%(dictionnary['YYYY-MM'], row[1]) )
+                common.log( 'MPDB.update_yyyy_mm_tags()', 'Tag YYYY-MM with value %s NOT inserted for "%s"'%(dictionary['YYYY-MM'], row[1]) )
                 
         self.con.commit()
 
@@ -444,34 +459,37 @@ class MyPictureDB(object):
         return full_filename
 
         
-    def file_insert(self, path,filename,dictionnary,update=False, sha=0):
+    def file_insert(self, path,filename,dictionary,update=False, sha=0):
         """
-        insert into file database the dictionnary values into the dictionnary keys fields
+        insert into file database the dictionary values into the dictionary keys fields
         keys are DB fields ; values are DB values
         """
         
         try:
             
             if self.con.get_backend() == "mysql":
-                imagedatetime = "0000-00-00 00:00:00"
+                imagedatetime = "1000-01-01 00:00:00"
             else:
                 imagedatetime = ""
                 
             
-            if  "EXIF DateTimeOriginal" in dictionnary:
-                imagedatetime = dictionnary["EXIF DateTimeOriginal"]
+            if  "EXIF DateTimeOriginal" in dictionary:
+                imagedatetime = dictionary["EXIF DateTimeOriginal"]
 
-            elif (len(imagedatetime.strip()) < 10 or imagedatetime == "0000-00-00 00:00:00" ) and "Image DateTime" in dictionnary:
-                imagedatetime = dictionnary["Image DateTime"]                
+            elif (len(imagedatetime.strip()) < 10 or imagedatetime == "1000-01-01 00:00:00" ) and "Image DateTime" in dictionary:
+                imagedatetime = dictionary["Image DateTime"]                
 
-            elif (len(imagedatetime.strip()) < 10 or imagedatetime == "0000-00-00 00:00:00" ) and "ImageDateTime" in dictionnary:
-                imagedatetime = dictionnary["ImageDateTime"]
+            elif (len(imagedatetime.strip()) < 10 or imagedatetime == "1000-01-01 00:00:00" ) and "ImageDateTime" in dictionary:
+                imagedatetime = dictionary["ImageDateTime"]
 
-            elif (len(imagedatetime.strip()) < 10 or imagedatetime == "0000-00-00 00:00:00" ) and "EXIF DateTimeDigitized" in dictionnary:
-                imagedatetime = dictionnary["EXIF DateTimeDigitized"]
+            elif (len(imagedatetime.strip()) < 10 or imagedatetime == "1000-01-01 00:00:00" ) and "EXIF DateTimeDigitized" in dictionary:
+                imagedatetime = dictionary["EXIF DateTimeDigitized"]
 
+            # check for datetime in case of mysql
+            if imagedatetime < '1000-01-01 00:00:00' and self.con.get_backend() == "mysql":
+                imagedatetime = "1000-01-01 00:00:00"
                 
-            dictionnary['YYYY-MM'] = imagedatetime[:7]
+            dictionary['YYYY-MM'] = imagedatetime[:7]
 
         except:
             pass        
@@ -489,20 +507,20 @@ class MyPictureDB(object):
                         id_tagcontents=[row for row in self.cur.request("SELECT idTagContent FROM TagsInFiles WHERE idFile=?", (id_file,))]
                         self.cur.execute("Delete From TagsInFiles Where idFile=?", (id_file,))
                         
-                        self.cur.execute( """Update Files set ftype=?, Thumb=?, ImageRating=?, ImageDateTime=?, Sha=? where idFile=?""", ( dictionnary["ftype"], dictionnary["Thumb"], dictionnary["Image Rating"], imagedatetime, sha, str(id_file) ) )
+                        self.cur.execute( """Update Files set ftype=?, Thumb=?, ImageRating=?, ImageDateTime=?, Sha=? where idFile=?""", ( dictionary["ftype"], dictionary["Thumb"], dictionary["Image Rating"], imagedatetime, sha, str(id_file) ) )
                         
                     except:
                         pass
                     
             else:
                 self.cur.execute( """INSERT INTO Files(idFolder, strPath, strFilename, ftype, DateAdded,  Thumb,  ImageRating, ImageDateTime, Sha) values (?, ?, ?, ?, ?, ?, ?, ?, ?)""", 
-                          ( dictionnary["idFolder"],  dictionnary["strPath"], dictionnary["strFilename"], dictionnary["ftype"], dictionnary["DateAdded"], dictionnary["Thumb"], dictionnary["Image Rating"], imagedatetime, sha ) )
+                          ( dictionary["idFolder"],  dictionary["strPath"], dictionary["strFilename"], dictionary["ftype"], dictionary["DateAdded"], dictionary["Thumb"], dictionary["Image Rating"], imagedatetime, sha ) )
 
         except Exception as msg:
     
             common.log("file_insert", "path = %s"%common.smart_unicode(filename).encode('utf-8'), xbmc.LOGERROR)
             common.log("file_insert",  "%s - %s"%(Exception,msg), xbmc.LOGERROR )
-            common.log( "file_insert", """INSERT INTO Files('%s') values (%s)""" % ( "','".join(dictionnary.keys()) , ",".join(["?"]*len(dictionnary.values())) ), xbmc.LOGERROR )
+            common.log( "file_insert", """INSERT INTO Files('%s') values (%s)""" % ( "','".join(dictionary.keys()) , ",".join(["?"]*len(dictionary.values())) ), xbmc.LOGERROR )
 
             raise MyPictureDBException
     
@@ -510,7 +528,7 @@ class MyPictureDB(object):
         # meta table inserts
         try:
             id_file = [row[0] for row in self.cur.request("SELECT idFile FROM Files WHERE strPath = ? AND strFilename = ?",(path,filename,) )] [0]
-            self.tags_insert(id_file, filename, path, dictionnary)
+            self.tags_insert(id_file, filename, path, dictionary)
         except Exception as msg:
             common.log("",  "%s - %s"%(Exception,msg), xbmc.LOGERROR )             
     
@@ -518,14 +536,14 @@ class MyPictureDB(object):
         return True
     
     
-    def tags_insert(self, idfile, filename, path, dictionnary):
+    def tags_insert(self, idfile, filename, path, dictionary):
 
         # loop over tags dictionary
-        for tag_type, value in dictionnary.items():
+        for tag_type, value in dictionary.items():
     
             value = str(value)
             common.log("", tag_type + " = " + value)
-            if tag_type in dictionnary:
+            if tag_type in dictionary:
     
                 # exclude the following tags
                 if tag_type not in ['sha', 'strFilename', #'strPath',
@@ -1312,9 +1330,9 @@ class MyPictureDB(object):
         """Look for given keyword and return the list of pictures.
         If tag is not given, pictures with no keywords are returned"""
         if tag is not None: 
-            return [row for row in self.cur.request( "SELECT distinct strPath,strFilename FROM Files f, TagContents tc, TagsInFiles tif, TagTypes tt WHERE f.idFile = tif.idFile AND tif.idTagContent = tc.idTagContent AND tc.TagContent = ? and tc.idTagType = tt.idTagType  and length(trim(tt.TagTranslation))>0 and tt.TagTranslation = ?  order by imagedatetime ",(tag,tag_type) )]
+            return [row for row in self.cur.request( "SELECT strPath, strFilename FROM (SELECT distinct strPath, strFilename, imagedatetime FROM Files f, TagContents tc, TagsInFiles tif, TagTypes tt WHERE f.idFile = tif.idFile AND tif.idTagContent = tc.idTagContent AND tc.TagContent = ? and tc.idTagType = tt.idTagType  and length(trim(tt.TagTranslation))>0 and tt.TagTranslation = ?  order by imagedatetime ) trick",(tag,tag_type) )]
         else: 
-            return [row for row in self.cur.request( "SELECT distinct strPath,strFilename FROM Files WHERE idFile NOT IN (SELECT DISTINCT idFile FROM TagsInFiles) order by imagedatetime " )]
+           return [row for row in self.cur.request( "SELECT strPath, strFilename FROM (SELECT distinct strPath, strFilename, imagedatetime FROM Files WHERE idFile NOT IN (SELECT DISTINCT idFile FROM TagsInFiles) order by imagedatetime ) trick" )]
     
     
     def default_tagtypes_translation(self):
