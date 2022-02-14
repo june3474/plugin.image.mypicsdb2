@@ -89,6 +89,7 @@ class Main:
             MPDB = MypicsDB.MyPictureDB()
         except Exception as msg:
             common.log("Main.add_directory",  "%s - %s"%(Exception,str(msg)), xbmc.LOGERROR )
+            raise msg
 
 
     def get_args(self):
@@ -1859,6 +1860,7 @@ if __name__=="__main__":
 
     m=Main()
     MPDB = MypicsDB.MyPictureDB()
+  
         
     if not sys.argv[ 2 ] or len(sys.argv[ 2 ]) == 0: 
         
@@ -1868,7 +1870,7 @@ if __name__=="__main__":
             
         else:
             MPDB.version_table()
-
+        
         if common.getaddon_setting('bootscan')=='true':
             if common.getaddon_setting('scanning')=='false':
                 common.run_script("%s,--database"%join( home, "scanpath.py") )

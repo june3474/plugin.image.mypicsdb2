@@ -28,20 +28,16 @@ d) To concatenate different file/path name parts use the | sign.
 
 a) After renaming a directory you must do a full rescan!
 
-## 2) MySql
+## 2) MySql or MariaDB
 
-ATTENTION: Currently not supported!
+a)You must create a database, a user and grant him the rights to access the database:
 
-a) You must create a database:
-CREATE DATABASE MyPicsDB CHARACTER SET utf8 COLLATE utf8_bin;
+CREATE DATABASE MyPicsDB CHARACTER SET utf8mb4 COLLATE utf8mb4_bin;
+CREATE USER 'kodi'@'%' IDENTIFIED BY 'kodi_password';
+GRANT ALL ON *.* TO 'kodi'@'%';
 
-b) Create a user (if not already done for music and movies):
-CREATE USER 'xbmc'@'%' IDENTIFIED BY 'xbmc';
-
-c) give him rights
-GRANT ALL ON *.* TO 'xbmc'@'%';
-
-d) Go to plugin settings and enable MySql. Set the correct user and password (they are case sensitive)!
+b) Go to plugin settings and enable MySql. Set the correct databasename, user name and password (they are case sensitive)!
+c) Then you must leave the addon and restart it. It will show you that it will create a MyPicsDB database.
 
 
 ## 3) Tag translation and combination of tags
