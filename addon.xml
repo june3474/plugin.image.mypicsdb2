@@ -1,9 +1,11 @@
 ﻿<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="plugin.image.mypicsdb2" version="19.2.2" name="My Pictures Database" provider-name="Xycl | MikeBZH44 | Alexsolex">
+<addon id="plugin.image.mypicsdb2" version="19.4.0" name="My Pictures Database" provider-name="Xycl | MikeBZH44 | Alexsolex">
 	<requires>
         <import addon="xbmc.python" version="3.0.0"/>
         <import addon="script.common.plugin.cache" version="2.6.1"/>
 		<import addon="script.module.myconnpy" version="8.0.0"/>
+		<import addon="script.module.mypicsdb2lib" version="19.4.0"/>
+		<import addon="script.module.mypicsdb2scan" version="19.4.0"/>
 	</requires>
 	<extension point="xbmc.python.pluginsource" library="default.py">
 		<provides>image</provides>
