@@ -1,6 +1,4 @@
 #!/usr/bin/python
-# -*- coding: utf8 -*-
-
 
 __addonname__ = 'plugin.image.mypicsdb2'
 
