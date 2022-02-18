@@ -74,8 +74,11 @@ class MyPictureDB(object):
             raise msg 
             
     def __del__(self):
-        self.cur.close()
-        self.con.disconnect()
+        try:
+            self.cur.close()
+            self.con.disconnect()
+        except:
+            pass
         
     def DB_version(self):
         # Test Version of DB
