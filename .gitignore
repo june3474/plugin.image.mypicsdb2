@@ -5,3 +5,5 @@
 *.suo
 *.pyproj
 *.sln
+/.vs/ProjectSettings.json
+/.vs/slnx.sqlite

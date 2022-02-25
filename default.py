@@ -268,6 +268,8 @@ class Main:
                     common.log("Main.add_picture", "Picture has rating")
                     suffix = suffix + "[COLOR=C0FFFF00]"+("*"*int(rating))+"[/COLOR][COLOR=C0C0C0C0]"+("*"*(5-int(rating)))+"[/COLOR]"
 
+                persons = MPDB.get_pic_persons(picpath,picname)
+                liz.setProperty('mypicsdb_person', persons ) 
                 liz.setInfo( type="pictures", infoLabels=infolabels )
 
             liz.setLabel(picname+" "+suffix)
@@ -1616,9 +1618,7 @@ class Main:
             # BUG CONNU : cette requête ne récupère que les photos du dossier choisi, pas les photos 'filles' des sous dossiers
             #   il faut la modifier pour récupérer les photos filles des sous dossiers
             listid = MPDB.all_children_of_folder(self.args.folderid)
-            filelist = [row for row in MPDB.cur.request( """SELECT p.FullPath,f.strFilename FROM Files f, Folders p WHERE COALESCE(case ImageRating when '' then '0' else ImageRating end,'0') >= ? AND f.idFolder=p.idFolder AND p.ParentFolder in ('%s') ORDER BY ImageDateTime ASC LIMIT %s OFFSET %s"""%("','".join([str(i) for i in listid]),
-                                                                                                                                                                                                                                    limit,
-                                                                                                                                                                                                                                    offset),(min_rating,))]
+            filelist = [row for row in MPDB.cur.request( """SELECT p.FullPath,f.strFilename FROM Files f, Folders p WHERE COALESCE(case ImageRating when '' then '0' else ImageRating end,'0') >= ? AND f.idFolder=p.idFolder AND p.ParentFolder in ('%s') ORDER BY ImageDateTime ASC LIMIT %s OFFSET %s"""%("','".join([str(i) for i in listid]), limit, offset),(min_rating,))]
 
         elif self.args.method == "collection":
             if int(common.getaddon_setting("ratingmini"))>0:
@@ -1977,9 +1977,11 @@ if __name__=="__main__":
 
     else:
         m.show_home()
-
-    MPDB.cur.close()
-    MPDB.con.disconnect()
+    try:
+        MPDB.cur.close()
+        MPDB.con.disconnect()
+    except:
+        pass
     del MPDB
 
 
