@@ -267,7 +267,8 @@ class Main:
                 if int(rating)>0:
                     common.log("Main.add_picture", "Picture has rating")
                     suffix = suffix + "[COLOR=C0FFFF00]"+("*"*int(rating))+"[/COLOR][COLOR=C0C0C0C0]"+("*"*(5-int(rating)))+"[/COLOR]"
-
+                
+                
                 persons = MPDB.get_pic_persons(picpath,picname)
                 liz.setProperty('mypicsdb_person', persons ) 
                 liz.setInfo( type="pictures", infoLabels=infolabels )
