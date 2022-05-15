@@ -1,11 +1,9 @@
 #!/usr/bin/python
-# -*- coding: utf8 -*-
-
 
 __addonname__ = 'plugin.image.mypicsdb2'
 
 # common depends on __addonname__
-import resources.lib.common as common
+import mypicsdb.common as common
 
 import os, sys, time, re
 from os.path import join,isfile,basename,dirname,splitext
@@ -40,11 +38,11 @@ sys_encoding = sys.getfilesystemencoding()
 
 if "MypicsDB" in sys.modules:
     del sys.modules["MypicsDB"]
-import resources.lib.MypicsDB as MypicsDB
-import resources.lib.filterwizard as filterwizard
-import resources.lib.googlemaps as googlemaps
-import resources.lib.translationeditor as translationeditor
-import resources.lib.viewer as viewer
+import mypicsdb.MypicsDB as MypicsDB
+import mypicsdb.filterwizard as filterwizard
+import mypicsdb.googlemaps as googlemaps
+import mypicsdb.translationeditor as translationeditor
+import mypicsdb.viewer as viewer
 
 # these few lines are taken from AppleMovieTrailers script
 # Shared resources
@@ -269,7 +267,10 @@ class Main:
                 if int(rating)>0:
                     common.log("Main.add_picture", "Picture has rating")
                     suffix = suffix + "[COLOR=C0FFFF00]"+("*"*int(rating))+"[/COLOR][COLOR=C0C0C0C0]"+("*"*(5-int(rating)))+"[/COLOR]"
-
+                
+                
+                persons = MPDB.get_pic_persons(picpath,picname)
+                liz.setProperty('mypicsdb_person', persons ) 
                 liz.setInfo( type="pictures", infoLabels=infolabels )
 
             liz.setLabel(picname+" "+suffix)
@@ -1066,7 +1067,7 @@ class Main:
                         common.log("Main.show_roots", 'MPDB.add_root_folder failed for "%s"'%source, xbmc.LOGERROR)                
 
                 if common.getaddon_setting('scanning')=='false':
-                    common.run_script("%s,--refresh"% join( home, "scanpath.py"))
+                    common.run_script("%s,--refresh"% "script.module.mypicsdb2scan")
                     return
 
                 
@@ -1107,12 +1108,12 @@ class Main:
                             newpartialroot = newroot[12:-1].split('/')
                             for item in newpartialroot:
                                 common.log("Main.show_roots",  'Starting scanpath "%s"'% unquote(item) )
-                                common.run_script("%s,%s --rootpath=%s"%( join( home, "scanpath.py"),recursive and "-r, " or "",common.quote_param(unquote(item))))
+                                common.run_script("%s,%s --rootpath=%s"%( "script.module.mypicsdb2scan",recursive and "-r, " or "",common.quote_param(unquote(item))))
                                 
                                 common.log("Main.show_roots",  'Scanpath "%s" started'% unquote(item) )
                         else:
                             common.log("Main.show_roots",  'Starting scanpath "%s"'%newroot)
-                            common.run_script("%s,%s --rootpath=%s"%( join( home, "scanpath.py"),recursive and "-r, " or "",common.quote_param(newroot)))
+                            common.run_script("%s,%s --rootpath=%s"%( "script.module.mypicsdb2scan",recursive and "-r, " or "",common.quote_param(newroot)))
 
                             common.log("Main.show_roots",  'Scanpath "%s" started'%newroot )
                 else:
@@ -1140,8 +1141,7 @@ class Main:
             if common.getaddon_setting('scanning')=='false':
                 if str(self.args.exclude)=="0":
                     path,recursive,update,exclude = MPDB.get_root_folders(self.args.rootpath) 
-                    common.run_script("%s,%s --rootpath=%s"%( join( home, "scanpath.py"),recursive and "-r, " or "",common.quote_param(path)))
-
+                    common.run_script("%s,%s --rootpath=%s"%( "script.module.mypicsdb2scan",recursive and "-r, " or "",common.quote_param(path)))
                 else:
                     pass
             else:
@@ -1149,14 +1149,14 @@ class Main:
                 return
         elif self.args.do=="scanall":
             if common.getaddon_setting('scanning')=='false':
-                common.run_script("%s,--database"% join( home, "scanpath.py"))
+                common.run_script("script.module.mypicsdb2scan,--database")
                 return
             else:
                 #dialogaddonscan était en cours d'utilisation, on return
                 return
         elif self.args.do=="refreshpaths":
             if common.getaddon_setting('scanning')=='false':
-                common.run_script("%s,--refresh"% join( home, "scanpath.py"))
+                common.run_script("script.module.mypicsdb2scan,--refresh")
                 return
 
         if int(sys.argv[1]) >= 0:
@@ -1619,9 +1619,7 @@ class Main:
             # BUG CONNU : cette requête ne récupère que les photos du dossier choisi, pas les photos 'filles' des sous dossiers
             #   il faut la modifier pour récupérer les photos filles des sous dossiers
             listid = MPDB.all_children_of_folder(self.args.folderid)
-            filelist = [row for row in MPDB.cur.request( """SELECT p.FullPath,f.strFilename FROM Files f, Folders p WHERE COALESCE(case ImageRating when '' then '0' else ImageRating end,'0') >= ? AND f.idFolder=p.idFolder AND p.ParentFolder in ('%s') ORDER BY ImageDateTime ASC LIMIT %s OFFSET %s"""%("','".join([str(i) for i in listid]),
-                                                                                                                                                                                                                                    limit,
-                                                                                                                                                                                                                                    offset),(min_rating,))]
+            filelist = [row for row in MPDB.cur.request( """SELECT p.FullPath,f.strFilename FROM Files f, Folders p WHERE COALESCE(case ImageRating when '' then '0' else ImageRating end,'0') >= ? AND f.idFolder=p.idFolder AND p.ParentFolder in ('%s') ORDER BY ImageDateTime ASC LIMIT %s OFFSET %s"""%("','".join([str(i) for i in listid]), limit, offset),(min_rating,))]
 
         elif self.args.method == "collection":
             if int(common.getaddon_setting("ratingmini"))>0:
@@ -1873,7 +1871,7 @@ if __name__=="__main__":
         
         if common.getaddon_setting('bootscan')=='true':
             if common.getaddon_setting('scanning')=='false':
-                common.run_script("%s,--database"%join( home, "scanpath.py") )
+                common.run_script("%s,--database"%"script.module.mypicsdb2scan" )
                 xbmc.executebuiltin( "Container.Update(\"%s?action='showhome'&viewmode='view'\" ,)"%(sys.argv[0]) , )
         else:
             m.show_home()
@@ -1980,9 +1978,11 @@ if __name__=="__main__":
 
     else:
         m.show_home()
-
-    MPDB.cur.close()
-    MPDB.con.disconnect()
+    try:
+        MPDB.cur.close()
+        MPDB.con.disconnect()
+    except:
+        pass
     del MPDB
 
 

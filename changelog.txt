@@ -1,3 +1,9 @@
+2022/02/18 --> 19.4.0
+New: MyPicsDB restructured in addon, library and scanner script
+
+2022/02/16 --> v 19.0.13 - 19.2.3
+Fix: MySql and MariaDB database connection again working
+
 2021/03/30 --> v 19.0.0 - 19.0.12
 Update: Kodi Matrix beta versions for Python 3
 

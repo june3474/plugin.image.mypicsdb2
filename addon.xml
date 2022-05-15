@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="plugin.image.mypicsdb2" version="19.4.1" name="My Pictures Database" provider-name="Xycl | MikeBZH44 | Alexsolex">
+<addon id="plugin.image.mypicsdb2" version="19.4.2" name="My Pictures Database" provider-name="Xycl">
 	<requires>
     <import addon="xbmc.python" version="3.0.0"/>
     <import addon="script.common.plugin.cache" version="2.6.1"/>
