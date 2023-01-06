@@ -116,6 +116,7 @@ venv.bak/
 .idea/
 .metadata/
 .vs/
+.vscode/
 *.pyproj
 *.sln
 
