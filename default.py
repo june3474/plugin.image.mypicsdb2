@@ -17,7 +17,7 @@ import re
 import urllib
 
 from os.path import join, isfile, basename, dirname, splitext
-from urllib.parse import unquote
+from urllib.parse import parse_qsl, unquote
 from time import strftime, strptime
 from traceback import print_exc
 from ast import Not
@@ -73,8 +73,9 @@ files_fields_description = {
 
 
 class _Info:
-    def __init__(self, *args, **kwargs):
-        self.__dict__.update(kwargs)
+    def __init__(self, params):
+        _args = parse_qsl(params, separator=',')
+        self.__dict__.update(_args)
 
     def has_key(self, key):
         return key in self.__dict__
@@ -105,12 +106,9 @@ class Main:
         self.get_args()
 
     def get_args(self):
-        common.log("Main.get_args", "MyPicturesDB plugin called :", xbmc.LOGINFO)
-        common.log("Main.get_args", "sys.argv[0] = %s" % sys.argv[0], xbmc.LOGINFO)
-        common.log("Main.get_args", "sys.argv[2] = %s" % sys.argv[2], xbmc.LOGINFO)
+        common.log("Main.get_args", 'MyPicturesDB plugin called with "%s".' % sys.argv[2][1:], xbmc.LOGINFO)
 
         self.parm = common.smart_utf8(unquote(sys.argv[2])).replace("\\\\", "\\")
-        common.log("Main.get_args", "self.parm = %s" % self.parm)
 
         # change for ruuk's plugin screensaver
         self.parm = self.parm.replace('&plugin_slideshow_ss=true', '')
@@ -121,11 +119,7 @@ class Main:
 
         sys.argv[2] = self.parm
         parm = self.cleanup(self.parm[1:])
-
-        args = "self.args = _Info(%s)" % (parm)
-
-        exec(args)
-        self.args.output()
+        self.args = _Info(parm)
 
         if not hasattr(self.args, 'page'):
             self.args.page = ''
