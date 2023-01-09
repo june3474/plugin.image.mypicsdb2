@@ -236,6 +236,18 @@ msgctxt "#30102"
 msgid "Browse by Folders"
 msgstr "Browse by Folders"
 
+msgctxt "#30103"
+msgid "Browse by root folders"
+msgstr ""
+
+msgctxt "#30104"
+msgid "Browse by child folders"
+msgstr ""
+
+msgctxt "#30105"
+msgid "Date ranges"
+msgstr "
+
 msgctxt "#30105"
 msgid "Date ranges"
 msgstr "Date ranges"
@@ -517,7 +529,7 @@ msgid "No = scan only modified/new pictures."
 msgstr "No = scan only modified/new pictures."
 
 msgctxt "#30216"
-msgid "[B]Add[/B] all Kodi pictures sources to database"
+msgid "[B]Add[/B] all Kodi pictures sources to databasew"
 msgstr "[B]Add[/B] all Kodi pictures sources to database"
 
 msgctxt "#30217"
