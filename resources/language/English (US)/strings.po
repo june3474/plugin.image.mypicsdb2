@@ -238,15 +238,11 @@ msgstr "Browse by Folders"
 
 msgctxt "#30103"
 msgid "Browse by root folders"
-msgstr ""
+msgstr "Browse by root folders"
 
 msgctxt "#30104"
 msgid "Browse by child folders"
-msgstr ""
-
-msgctxt "#30105"
-msgid "Date ranges"
-msgstr "
+msgstr "Browse by child folders"
 
 msgctxt "#30105"
 msgid "Date ranges"
