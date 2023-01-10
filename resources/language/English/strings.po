@@ -263,7 +263,13 @@ msgctxt "#30102"
 msgid "Browse by Folders"
 msgstr ""
 
-#empty strings from id 30103 to 30104
+msgctxt "#30103"
+msgid "Browse by root folders"
+msgstr ""
+
+msgctxt "#30104"
+msgid "Browse by child folders"
+msgstr ""
 
 msgctxt "#30105"
 msgid "Date ranges"
