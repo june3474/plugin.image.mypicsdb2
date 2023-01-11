@@ -17,7 +17,7 @@ import time
 import re
 import urllib
 
-from os.path import join, isfile, basename, dirname, splitext
+from os.path import join, isfile, basename, dirname, splitext, exists
 from urllib.parse import parse_qsl, unquote
 from time import strftime, strptime
 from traceback import print_exc
@@ -150,6 +150,31 @@ class Main:
 
         return output
 
+    def is_picture(self, filename):
+        ext = splitext(filename)[1][1:].upper()
+        return ext in [ext.upper() for ext in common.getaddon_setting("picsext").split("|")]
+
+    def is_video(self, filename):
+        ext = splitext(filename)[1][1:].upper()
+        return ext in [ext.upper() for ext in common.getaddon_setting("vidsext").split("|")]
+
+    def find_fanart(self, path, filename):
+        filepath = join(path, filename)
+        if self.is_picture(filename):
+            if xbmcplugin.getSetting(int(sys.argv[1]), 'usepicasfanart') == 'true':
+                return filepath
+            else:
+                return join(PIC_PATH, 'pic-fanart.jpg')
+        elif self.is_video(filename):
+            root, ext = splitext(filename)
+            fanart_file = root + '-fanart' + ext
+            if exists(fanart_file): # find in the same directory
+                return fanart_file
+            else:
+                return join(PIC_PATH, 'vid-fanart.jpg')
+
+        return None
+
     def add_directory(self, name, params, action, iconimage=None, fanart=None,
                       contextmenu=None, total=0, info="*", replacemenu=True, path=None):
         try:
@@ -169,7 +194,7 @@ class Main:
             liz = xbmcgui.ListItem(label=name)
             liz.setProperty("mypicsdb", "True")
 
-            if iconimage and not path:
+            if iconimage and not path: # When path is provided, use kodi's default folder icon 
                 liz.setArt({'thumb': iconimage})
             if fanart:
                 liz.setArt({'fanart': fanart})
@@ -208,7 +233,6 @@ class Main:
         rating = ""
         coords = None
         date = None
-        extension = splitext(picname)[1].upper()
         try:
             fullfilepath = join(picpath, picname)
             common.log("Main.add_picture", "Name = %s" % fullfilepath)
@@ -223,11 +247,11 @@ class Main:
                 common.log("", "%s - %s" % (Exception, msg), xbmc.LOGERROR)
 
             # is the file a video ?
-            if extension in [ext.upper() for ext in common.getaddon_setting("vidsext").split("|")]:
+            if self.is_video(picname):
                 infolabels = {"date": date}
                 liz.setInfo(type="video", infoLabels=infolabels)
             # or is the file a picture ?
-            elif extension in [ext.upper() for ext in common.getaddon_setting("picsext").split("|")]:
+            elif self.is_picture(picname):
                 ratingmini = int(common.getaddon_setting("ratingmini"))
                 if ratingmini > 0:
                     if not rating or int(rating) < ratingmini:
@@ -247,15 +271,15 @@ class Main:
                 """
                 resolutionXY = MPDB.cur.request(_query, (picpath, picname))
 
-                if date is None:
+                if not date:
                     infolabels = {"picturepath": picname + " " + suffix, "count": count}
                 else:
                     infolabels = {"picturepath": picname + " " + suffix, "date": date, "count": count}
 
                 try:
-                    if exiftime != None and exiftime != "0":
+                    if exiftime:
                         common.log("Main.add_picture", "Picture has EXIF Date/Time %s" % exiftime)
-                        infolabels["exif:exiftime"] = exiftime
+                        infolabels["exif:exiftime"] = date
                 except:
                     pass
 
@@ -283,9 +307,11 @@ class Main:
                 liz.setProperty('mypicsdb_person', persons)
                 liz.setInfo(type="pictures", infoLabels=infolabels)
 
+            liz.setProperty("mypicsdb", "True")
             liz.setLabel(picname + " " + suffix)
 
-            if fanart is not None and fanart != False:
+            if fanart:
+                liz.setArt({'fanart': fanart})
                 liz.setProperty('fanart_image', fanart)
 
             # if contextmenu:
@@ -590,14 +616,14 @@ class Main:
             childrenfolders = [row for row in MPDB.cur.request_with_binds(
                 "SELECT idFolder,FolderName FROM Folders WHERE ParentFolder=?", (self.args.folderid,))]
 
-        # show the folders
+        # show folders in the folder
         for idchildren, childrenfolder in childrenfolders:
             common.log("Main.show_folders", "children folder = %s" % childrenfolder)
             path = MPDB.cur.request_with_binds(
                 "SELECT FullPath FROM Folders WHERE idFolder = ?", (idchildren,))[0][0]
             count = MPDB.count_pics_in_folder(idchildren, min_rating)
             if count > 0:
-                name="%s (%s %s)" % (childrenfolder, count, common.getstring(30050))  # libellé
+                name="%s (%s %s)" % (childrenfolder, count, common.getstring(30050)) # libellé
                 params=[("method", "folders"), ("folderid", str(idchildren)), 
                         ("onlypics", "non"), ("viewmode", "view")] # paramètres
                 contextmenu=[(common.getstring(30212),
@@ -605,8 +631,8 @@ class Main:
                              "action=rootfolders&do=addrootfolder&addpath=%s&exclude=1&viewmode=view\",)" % \
                              (common.quote_param(path))), ]
                 self.add_directory(name=name, params=params,
-                                   action="showfolder",  # action
-                                   iconimage=join(PIC_PATH, "folder_pictures.png"),  # icone
+                                   action="showfolder", # action
+                                   iconimage=join(PIC_PATH, "folder_pictures.png"), # icone
                                    contextmenu=contextmenu,
                                    total=len(childrenfolders),
                                    path=path)
@@ -631,10 +657,11 @@ class Main:
             picsfromfolder = [row for row in MPDB.cur.request_with_binds(
                 _query, (self.args.folderid,))]
 
+        # show pictures in the folder
         count = 0
         for path, filename in picsfromfolder:
-            path = common.smart_unicode(path)
-            filename = common.smart_unicode(filename)
+            #path = common.smart_unicode(path)
+            #filename = common.smart_unicode(filename)
 
             count = count + 1
             common.log("Main.show_folders", "pic's path = %s  pic's name = %s" % (path, filename))
@@ -646,8 +673,7 @@ class Main:
                             "action=addtocollection&viewmode=view&path=%s&filename=%s\")" % \
                                 (common.quote_param(path), common.quote_param(filename))))
             self.add_picture(filename, path, count=count, contextmenu=context,
-                             fanart=xbmcplugin.getSetting(int(sys.argv[1]), 'usepicasfanart') == 'true' and \
-                                 join(path, filename))
+                             fanart=self.find_fanart(path, filename))
 
         xbmcplugin.addSortMethod(
             int(sys.argv[1]), xbmcplugin.SORT_METHOD_LABEL)
@@ -2189,8 +2215,7 @@ class Main:
                              path,
                              count=count,
                              contextmenu=context,
-                             fanart=xbmcplugin.getSetting(int(sys.argv[1]), 'usepicasfanart') == 'true' \
-                                 and join(path, filename))
+                             fanart=self.find_fanart(path, filename))
         xbmcplugin.addSortMethod(int(sys.argv[1]), xbmcplugin.SORT_METHOD_DATE)
         xbmcplugin.addSortMethod(
             int(sys.argv[1]), xbmcplugin.SORT_METHOD_PROGRAM_COUNT)
