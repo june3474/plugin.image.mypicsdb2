@@ -244,7 +244,7 @@ class Main:
                 (exiftime, rating) = MPDB.get_pic_date_rating(picpath, picname)
                 date = exiftime.strftime("%Y.%m.%d") if exiftime else ""
             except Exception as msg:
-                common.log("", "%s - %s" % (Exception, msg), xbmc.LOGERROR)
+               common.log("Main.add_picture", "%s - %s" % (Exception, msg), xbmc.LOGERROR)
 
             # is the file a video ?
             if self.is_video(picname):

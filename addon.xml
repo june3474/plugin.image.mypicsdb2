@@ -10,6 +10,14 @@
 	<extension point="xbmc.python.pluginsource" library="default.py">
 		<provides>image</provides>
 	</extension>
+  <extension point="kodi.context.item">
+      <menu id="kodi.core.main">
+          <item library="contextitem.py" args="folder">
+              <label>$LOCALIZE[361]</label>
+              <visible>!String.IsEmpty(ListItem.Property(mypicsdb)) + ListItem.IsFolder + !Window.IsVisible(pictures)</visible>
+          </item>
+      </menu>
+  </extension>  
 	<extension point="xbmc.addon.metadata">
         <summary lang="be">Advanced Pictures manager</summary>
         <summary lang="bg">Разширено управление на снимки</summary>
