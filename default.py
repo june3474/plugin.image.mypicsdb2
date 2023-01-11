@@ -1,4 +1,5 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
 
 __addonname__ = 'plugin.image.mypicsdb2'
 
@@ -42,7 +43,7 @@ except Exception as e:
 try:
     import StorageServer
 except:
-    import resources.lib.storageserverdummy as StorageServer
+    import storageserverdummy as StorageServer
 
 # set variables used by other modules
 sys_encoding = sys.getfilesystemencoding()
@@ -1766,7 +1767,7 @@ class Main:
         # Clear current photo playlist
         _json_query = xbmc.executeJSONRPC(
             '{"jsonrpc": "2.0", "method": "Playlist.Clear", "params": {"playlistid": 2}, "id": 1}')
-        _json_query = unicode(_json_query, 'utf-8', errors='ignore')
+        #_json_query = unicode(_json_query, 'utf-8', errors='ignore')
         _json_pl_response = simplejson.loads(_json_query)
         # Get number of picture to display from CommonCache
         cache.table_name = "MyPicsDB"
@@ -1779,7 +1780,7 @@ class Main:
             _json_query = xbmc.executeJSONRPC(
                 '{"jsonrpc": "2.0", "method": "Playlist.Add", "params": {"playlistid": 2, "item": {"file" : "%s"}}, "id": 1}' % (
                     str(_path.encode('utf8')).replace("\\", "\\\\")))
-            _json_query = unicode(_json_query, 'utf-8', errors='ignore')
+            #_json_query = unicode(_json_query, 'utf-8', errors='ignore')
             _json_pl_response = simplejson.loads(_json_query)
         # If _current not equal 1 then add pictures from 1 to _current - 1
         if _current != 1:
@@ -1790,12 +1791,12 @@ class Main:
                 _json_query = xbmc.executeJSONRPC(
                     '{"jsonrpc": "2.0", "method": "Playlist.Add", "params": {"playlistid": 2, "item": {"file" : "%s"}}, "id": 1}' % (
                         str(_path.encode('utf8')).replace("\\", "\\\\")))
-                _json_query = unicode(_json_query, 'utf-8', errors='ignore')
+                #_json_query = unicode(_json_query, 'utf-8', errors='ignore')
                 _json_pl_response = simplejson.loads(_json_query)
         # Start Slideshow
         _json_query = xbmc.executeJSONRPC(
             '{"jsonrpc": "2.0", "method": "Player.Open", "params": {"item": {"playlistid": 2}}, "id": 1}')
-        _json_query = unicode(_json_query, 'utf-8', errors='ignore')
+        #_json_query = unicode(_json_query, 'utf-8', errors='ignore')
         _json_pl_response = simplejson.loads(_json_query)
         t = (time.time() - START_TIME)
         # Display execution time
