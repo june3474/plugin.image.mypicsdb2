@@ -16,6 +16,10 @@
               <label>$LOCALIZE[361]</label>
               <visible>!String.IsEmpty(ListItem.Property(mypicsdb)) + ListItem.IsFolder + !Window.IsVisible(pictures)</visible>
           </item>
+          <item library="contextitem.py" args="picture">
+              <label>$LOCALIZE[13422]</label>
+              <visible>!String.IsEmpty(ListItem.Property(mypicsdb)) + !ListItem.IsFolder + !Window.IsVisible(pictures)</visible>
+          </item>
       </menu>
   </extension>  
 	<extension point="xbmc.addon.metadata">
