@@ -480,7 +480,8 @@ class Main:
         # last scan picture added
         if common.getaddon_setting('m_1') == 'true' or display_all:
             name = common.getstring(30209) % common.getaddon_setting("recentnbdays")
-            params = [("method", "recentpicsdb"), ("period", ""), ("value", ""), ("page", "1"), ("viewmode", "view")]
+            params = [("method", "recentpicsdb"), ("period", ""), ("value", ""), 
+                      ("page", "1"), ("viewmode", "view")]
             iconimage = join(PIC_PATH, "folder_recent_added.png")
             self.add_directory(name, params, "showpics", iconimage)
 
@@ -494,7 +495,7 @@ class Main:
         # N random pictures
         if common.getaddon_setting('m_13') == 'true' or display_all:
             name = common.getstring(30654) % common.getaddon_setting("randompicsnumber")
-            params = [("method", "random"), ("page", "1"), ("viewmode", "view")]
+            params = [("method", "random"), ("page", "1"), ("viewmode", "view"), ("onlypics", "oui")]
             iconimage = join(PIC_PATH, "folder_random.png")
             self.add_directory(name, params, "showpics", iconimage)
 
@@ -2019,7 +2020,13 @@ class Main:
                                 AND RANDOM() %% %s 
                                 ORDER BY RANDOM() LIMIT %s OFFSET %s""" % (min_rating, modulo, limit, offset)
                 filelist = [row for row in MPDB.cur.request(select)]
-
+                # remove video files, if parameter 'onlypics' is set
+                if self.args.onlypics == "oui":
+                    for path, filename in filelist:
+                        if self.is_video(filename):
+                            filelist.remove([path, filename])
+                            #common.log("Main.show_pics", '%s' % str(filelist), xbmc.LOGINFO)
+                
         # we are showing pictures for a DATE selection
         elif self.args.method == "date":
             #   lister les images pour une date donnée
