@@ -339,7 +339,7 @@ class Main:
             if fanart:
                 liz.setArt({'fanart': fanart})
             if contextmenu:
-                liz.addContextMenuItems(contextmenu, replacemenu)
+                liz.addContextMenuItems(contextmenu)
 
             return xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]), url=u, listitem=liz, isFolder=True)
         except Exception as msg:
@@ -361,7 +361,7 @@ class Main:
             liz.setArt({'thumb': iconimage})
 
             if contextmenu:
-                liz.addContextMenuItems(contextmenu, replacemenu)
+                liz.addContextMenuItems(contextmenu)
 
             return xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]), url=u, listitem=liz, isFolder=False)
         except Exception as msg:
@@ -460,7 +460,7 @@ class Main:
             #        contextmenu.append((common.getstring(30220),\
             #                            "RunPlugin(\"%s?action='geolocate'&place='%s'&path='%s'&filename='%s'&viewmode='view'\",)" %\
             #                            (sys.argv[0],"%0.6f,%0.6f" % (coords))
-            #    liz.addContextMenuItems(contextmenu,replacemenu)
+            #    liz.addContextMenuItems(contextmenu)
 
             return xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]), url=fullfilepath, listitem=liz, isFolder=False)
         except Exception as msg:
@@ -2053,14 +2053,12 @@ class Main:
 
             elif self.args.period == "year" or self.args.period == "":
                 if self.args.value:
-                    filelist = MPDB.pics_for_period(
-                        'year', self.args.value, min_rating)
+                    filelist = MPDB.pics_for_period('year', self.args.value, min_rating)
                 else:
                     filelist = MPDB.search_all_dates(min_rating)
 
             elif self.args.period in ["month", "date"]:
-                filelist = MPDB.pics_for_period(
-                    self.args.period, self.args.value, min_rating)
+                filelist = MPDB.pics_for_period(self.args.period, self.args.value, min_rating)
 
             elif self.args.period == "period":
                 filelist = MPDB.search_between_dates(DateStart=(self.args.datestart, formatstring),
