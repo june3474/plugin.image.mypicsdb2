@@ -123,7 +123,7 @@ class Main:
         self.args = _Info(self.parm)
 
         if not hasattr(self.args, 'page'):
-            self.args.page = ''
+            self.args.page = 0
 
     def cleanup(self, parm):
         in_apostrophe = False
@@ -709,7 +709,7 @@ class Main:
                 if action == "showpics":
                     context = [(common.getstring(30152),
                                 "RunPlugin(\"%s?" % (sys.argv[0]) +
-                                "action=addfolder&method=date&period=%s&value=%s&page=''&viewmode=scan\")" % \
+                                "action=addfolder&method=date&period=%s&value=%s&viewmode=scan\")" % \
                                 (nextperiod, period)), ]
                 else:
                     context = [(common.getstring(30152),
@@ -765,18 +765,23 @@ class Main:
                 "SELECT FullPath FROM Folders WHERE idFolder = ?", (idchildren,))[0][0]
             count = MPDB.count_pics_in_folder(idchildren, min_rating)
             if count > 0:
-                name="%s (%s %s)" % (childrenfolder, count, common.getstring(30050)) # libellé
+                name="%s (%s %s)" % (childrenfolder, count, common.getstring(30050))
                 params=[("method", "folders"), ("folderid", str(idchildren)), 
-                        ("onlypics", "non"), ("viewmode", "view")] # paramètres
-                contextmenu=[(common.getstring(30212),
-                             "Container.Update(\"%s?" % (sys.argv[0]) +
-                             "action=rootfolders&do=addrootfolder&addpath=%s&exclude=1&viewmode=view\",)" % \
-                             (common.quote_param(path))), ]
+                        ("onlypics", "non"), ("viewmode", "view")]
+                contextmenu=[(common.getstring(30212), # Exclude this folder from database
+                            "Container.Update(\"%s?" % (sys.argv[0]) +
+                            "action=rootfolders&do=addrootfolder&addpath=%s&exclude=1&viewmode=view\",)" % \
+                            (common.quote_param(path))),
+                            (common.getstring(30152), # Add to collection
+                             "RunPlugin(\"%s?" % (sys.argv[0]) +
+                             "action=addfolder&method=folders&viewmode=scan&folderid=%s\")" % \
+                             (common.quote_param(str(idchildren))))]
+
                 thumb = self.find_folder_thumb(path) or None
                 self.add_directory(name=name, 
                                    params=params,
-                                   action="showfolder", # action
-                                   iconimage=thumb, # icone
+                                   action="showfolder",
+                                   iconimage=thumb,
                                    contextmenu=contextmenu,
                                    total=len(childrenfolders),
                                    path=path)
@@ -803,27 +808,23 @@ class Main:
 
         # show pictures in the folder
         count = 0
+
+        # context.append((common.getstring(30303),"SlideShow(%s%s,recursive,notrandom)"%(sys.argv[0],sys.argv[2])))
         for path, filename in picsfromfolder:
             #path = common.smart_unicode(path)
             #filename = common.smart_unicode(filename)
-
-            count = count + 1
             common.log("Main.show_folders", "pic's path = %s  pic's name = %s" % (path, filename))
-
-            context = []
-            # context.append((common.getstring(30303),"SlideShow(%s%s,recursive,notrandom)"%(sys.argv[0],sys.argv[2])))
-            context.append((common.getstring(30152),
-                            "RunPlugin(\"%s?" % (sys.argv[0]) +
-                            "action=addtocollection&viewmode=view&path=%s&filename=%s\")" % \
-                                (common.quote_param(path), common.quote_param(filename))))
+            count = count + 1
+            context = [(common.getstring(30152), # Add to collection
+                    "RunPlugin(\"%s?" % (sys.argv[0]) +
+                    "action=addtocollection&viewmode=view&path=%s&filename=%s\")" % \
+                    (common.quote_param(path), common.quote_param(filename)))]            
             self.add_picture(filename, path, count=count, contextmenu=context,
                              fanart=self.find_fanart(path, filename))
 
-        xbmcplugin.addSortMethod(
-            int(sys.argv[1]), xbmcplugin.SORT_METHOD_LABEL)
+        xbmcplugin.addSortMethod(int(sys.argv[1]), xbmcplugin.SORT_METHOD_LABEL)
         xbmcplugin.addSortMethod(int(sys.argv[1]), xbmcplugin.SORT_METHOD_DATE)
-        xbmcplugin.addSortMethod(
-            int(sys.argv[1]), xbmcplugin.SORT_METHOD_PROGRAM_COUNT)
+        xbmcplugin.addSortMethod(int(sys.argv[1]), xbmcplugin.SORT_METHOD_PROGRAM_COUNT)
 
         self.change_view()
 
@@ -969,11 +970,11 @@ class Main:
                                  (common.quote_param(tag), tagtype)),
                              (common.getstring(30061),
                               "RunPlugin(\"%s?" % (sys.argv[0]) +
-                              "action=showpics&method=tag&page=''&viewmode=zip&name=%s&tag=%s&tagtype=%s\")" % \
+                              "action=showpics&method=tag&viewmode=zip&name=%s&tag=%s&tagtype=%s\")" % \
                                   (common.quote_param(tag), common.quote_param(tag), tagtype)),
                              (common.getstring(30062),
                               "RunPlugin(\"%s?" % (sys.argv[0]) +
-                                  "action=showpics&method=tag&page=''&viewmode=export&name=%s&tag=%s&tagtype=%s\")" % \
+                                  "action=showpics&method=tag&viewmode=export&name=%s&tag=%s&tagtype=%s\")" % \
                                       (common.quote_param(tag), common.quote_param(tag), tagtype))]
                 self.add_directory(name="%s (%s %s)" % (tag, nb, common.getstring(30050)),  # libellé
                                    params=[("method", "tag"), ("tag", tag), ("tagtype", tagtype), ("page", "1"),
@@ -1247,7 +1248,7 @@ class Main:
         for collection in MPDB.collections_list():
             contextmenu = [(common.getstring(30169),
                            "Container.Update(\"%s?" % (sys.argv[0]) +
-                           "action=showpics&method=collection&page=''&viewmode=view&name=%s&collect=%s\")" % \
+                           "action=showpics&method=collection&viewmode=view&name=%s&collect=%s\")" % \
                                (common.quote_param(collection[0]), common.quote_param(collection[0]))),
                            (common.getstring(30149),
                             "RunPlugin(\"%s?" % (sys.argv[0]) +
@@ -1263,11 +1264,11 @@ class Main:
                                 (common.quote_param(collection[0]))),
                            (common.getstring(30061),
                             "RunPlugin(\"%s?" % (sys.argv[0]) +
-                            "action=showpics&method=collection&page=''&viewmode=zip&name=%s&collect=%s\")" % \
+                            "action=showpics&method=collection&viewmode=zip&name=%s&collect=%s\")" % \
                                 (common.quote_param(collection[0]), common.quote_param(collection[0]))),
                            (common.getstring(30062),
                             "RunPlugin(\"%s?" % (sys.argv[0]) +
-                            "action=showpics&method=collection&page=''&viewmode=export&name=%s&collect=%s\")" % \
+                            "action=showpics&method=collection&viewmode=export&name=%s&collect=%s\")" % \
                                 (common.quote_param(collection[0]), common.quote_param(collection[0])))]
             self.add_action(name=collection[0],
                             params=[("method", "collection"), ("collect", collection[0]), 
@@ -1747,17 +1748,16 @@ class Main:
 
         # 3 associe en base l'id du fichier avec l'id de la collection
         filelist = self.show_pics()  # on récupère les photos correspondantes à la vue
-        namecollection = common.smart_unicode(namecollection)
+        #namecollection = common.smart_unicode(namecollection)
         for path, filename in filelist:  # on les ajoute une par une
-            path = common.smart_unicode(path)
+            #path = common.smart_unicode(path)
             #filename = common.smart_unicode(filename)
             MPDB.collection_add_pic(namecollection, path, filename)
+
         common.show_notification(common.getstring(30000),
                                  common.getstring(30161) % len(
                                      filelist) + ' ' + namecollection, 3000,
                                  join(home, "icon.png"))
-        # xbmc.executebuiltin( "Notification(%s,%s %s,%s,%s)" % 
-        # (common.getstring(30000), common.getstring(30161)%len(filelist),namecollection, 3000,join(home,"icon.png")))
 
     def collection_delete(self):
         dialog = xbmcgui.Dialog()
@@ -1982,13 +1982,13 @@ class Main:
             min_rating = 0
 
         if not self.args.page:  # 0 ou "" ou None : pas de pagination ; on affiche toutes les photos de la requête sans limite
+            page = 0
             limit = -1  # SQL 'LIMIT' statement equals to -1 returns all resulting rows
             offset = -1  # SQL 'OFFSET' statement equals to -1  : return resulting rows with no offset
-            page = 0
         else:  # do pagination stuff
-            limit = int(common.getaddon_setting("picsperpage"))
-            offset = (int(self.args.page) - 1) * limit
             page = int(self.args.page)
+            limit = int(common.getaddon_setting("picsperpage"))
+            offset = (page - 1) * limit
 
         if self.args.method == "folder":  # NON UTILISE : l'affichage par dossiers affiche de lui même les photos
             pass
@@ -2089,16 +2089,16 @@ class Main:
 
         # we are showing pictures for a FOLDER selection
         elif self.args.method == "folders":
-            #   lister les images du dossier self.args.folderid et ses sous-dossiers
-            # BUG CONNU : cette requête ne récupère que les photos du dossier choisi, pas les photos 'filles' des sous dossiers
-            #   il faut la modifier pour récupérer les photos filles des sous dossiers
-            listid = MPDB.all_children_of_folder(self.args.folderid)
-            filelist = [row for row in MPDB.cur.request(
-                """SELECT p.FullPath,f.strFilename FROM Files f, Folders p 
+            listid = [int(self.args.folderid)] + MPDB.all_children_of_folder(self.args.folderid)
+            common.log("show_pics", 'listid: %s' % listid, xbmc.LOGINFO)
+            _query = """
+                 SELECT p.FullPath,f.strFilename FROM Files f, Folders p 
                    WHERE COALESCE(case ImageRating when '' then '0' else ImageRating end,'0') >= ? 
                    AND f.idFolder=p.idFolder AND p.ParentFolder in ('%s') 
                    ORDER BY ImageDateTime ASC 
-                   LIMIT %s OFFSET %s""" % ("','".join([str(i) for i in listid]), limit, offset), (min_rating,))]
+                   LIMIT %s OFFSET %s""" % ("','".join([str(i) for i in listid]), limit, offset)            
+            common.log("show_pics", 'sql: %s' % _query, xbmc.LOGINFO)
+            filelist = [row for row in MPDB.cur.request(_query, (min_rating,))]
 
         elif self.args.method == "collection":
             if int(common.getaddon_setting("ratingmini")) > 0:
@@ -2180,7 +2180,7 @@ class Main:
 
                 xbmc.Player().play(playlist)
                 xbmc.executebuiltin("PlayerControl(RepeatAll)")
-            command = "SlideShow(%s?action=showpics&method=collection&viewmode=view&page=''&collect=%s&name=%s, notrandom) " % (
+            command = "SlideShow(%s?action=showpics&method=collection&viewmode=view&collect=%s&name=%s, notrandom) " % (
                 sys.argv[0], self.args.collect, self.args.collect)
             xbmc.executebuiltin(command)
             return
