@@ -305,6 +305,16 @@ class Main:
         # Lastly, Let kodi create the thumbnail automatically.
         return None
 
+    # TODO when?
+    def find_cached_thumb_db(self, folderpath):
+        """
+        SELECT p.url, p.texture, t.cachedurl
+        FROM path as p, texture as t
+        WHERE p.url = folderpath
+        AND p.texture = t.url
+        """
+        pass
+
     def add_directory(self, name, params, action, iconimage=None, fanart=None,
                       contextmenu=None, total=0, info="*", replacemenu=True, path=None):
         try:
@@ -528,7 +538,7 @@ class Main:
         # Browse by Folders
         if common.getaddon_setting('m_5') == 'true' or display_all:
             name = common.getstring(30102)
-            params = [("method", "folders"), ("folderid", ""), ("onlypics", "non"), ("viewmode", "view")]
+            params = [("method", "folders"), ("folderid", "all"), ("onlypics", "non"), ("viewmode", "view")]
             iconimage = join(PIC_PATH, "folder_pictures.png")
             self.add_directory(name, params, "showfolder", iconimage)
 
@@ -729,18 +739,19 @@ class Main:
 
     def show_folders(self):
         common.log("Main.show_folders", "start")
-        # get the subfolders if any
+        
         if int(common.getaddon_setting("ratingmini")) > 0:
             min_rating = int(common.getaddon_setting("ratingmini"))
         else:
             min_rating = 0
-        if not self.args.folderid:  # No Id given, get all folders
+        
+        if self.args.folderid == 'all':  # get all folders
             childrenfolders = [row for row in MPDB.cur.request(
                 "SELECT idFolder,FolderName FROM Folders")]
-        elif self.args.folderid == 'root':  # get all the root folders
+        elif self.args.folderid == 'root':  # get root folders
             childrenfolders = [row for row in MPDB.cur.request(
                 "SELECT idFolder,FolderName FROM Folders WHERE ParentFolder is null")]
-        elif self.args.folderid == 'child':  # get all the child folders
+        elif self.args.folderid == 'child':  # get child folders
             childrenfolders = [row for row in MPDB.cur.request(
                 "SELECT idFolder,FolderName FROM Folders WHERE ParentFolder is NOT null")]
         else:  # else, get subfolders for given folder Id
@@ -1739,7 +1750,7 @@ class Main:
         namecollection = common.smart_unicode(namecollection)
         for path, filename in filelist:  # on les ajoute une par une
             path = common.smart_unicode(path)
-            filename = common.smart_unicode(filename)
+            #filename = common.smart_unicode(filename)
             MPDB.collection_add_pic(namecollection, path, filename)
         common.show_notification(common.getstring(30000),
                                  common.getstring(30161) % len(
