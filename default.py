@@ -1098,7 +1098,7 @@ class Main:
         else:
             min_rating = 0
 
-            # herve502
+        # herve502
         from xml.dom.minidom import parseString
         # /herve502
         common.log("show_collection", "started")
@@ -1223,13 +1223,13 @@ class Main:
         else:
             refresh = False
 
-        self.add_directory(name=common.getstring(30160),
+        self.add_directory(name=common.getstring(30160), # Create a new collection
                            params=[("method", "setcollection"), ("collect", ""),
                            ("viewmode", "view"), ],  # paramètres
                            action="showcollection",  # action
                            iconimage=join(PIC_PATH, "folder_collections.png"),  # icone
                            contextmenu=None)  # menucontextuel
-        self.add_directory(name=common.getstring(30168),
+        self.add_directory(name=common.getstring(30168), # Import album from saved filter setting
                            params=[("method", "importcollection_wizard"),
                                    ("collect", ""), ("viewmode", "view"), ],
                            # paramètres
@@ -1237,47 +1237,49 @@ class Main:
                            iconimage=join(PIC_PATH, "folder_collections.png"),  # icone
                            contextmenu=None)  # menucontextuel
         # herve502
-        self.add_directory(name=common.getstring(30162),
+        self.add_directory(name=common.getstring(30162), # Import album from Picasa xml
                            params=[("method", "importcollection_picasa"),
-                                   ("collect", ""), ("viewmode", "view"), ],
-                           # paramètres
+                                   ("collect", ""), ("viewmode", "view"), ], # paramètres
                            action="showcollection",  # action
                            iconimage=join(PIC_PATH, "folder_collections.png"),  # icone
                            contextmenu=None)  # menucontextuel
         # /herve520
         for collection in MPDB.collections_list():
-            contextmenu = [(common.getstring(30169),
-                           "Container.Update(\"%s?" % (sys.argv[0]) +
-                           "action=showpics&method=collection&viewmode=view&name=%s&collect=%s\")" % \
-                               (common.quote_param(collection[0]), common.quote_param(collection[0]))),
-                           (common.getstring(30149),
+            contextmenu = [(common.getstring(30303), # Show the slideshow
+                            "RunPlugin(\"%s?" % (sys.argv[0]) +
+                            "action=showpics&method=collection&viewmode=slideshow&page=1&collect=%s\")" % \
+                                (common.quote_param(collection[0]))),
+                           (common.getstring(30149), # Add playlist to collection
                             "RunPlugin(\"%s?" % (sys.argv[0]) +
                             "action=collectionaddplaylist&viewmode=view&collect=%s\")" % \
                                 (common.quote_param(collection[0]))),
-                           (common.getstring(30158),
+                           (common.getstring(30158), # Remove this collection
                             "RunPlugin(\"%s?" % (sys.argv[0]) +
                             "action=removecollection&viewmode=view&collect=%s\")" % \
                                 (common.quote_param(collection[0]))),
-                           (common.getstring(30159),
+                           (common.getstring(30159), # Rename this collection
                             "RunPlugin(\"%s?" % (sys.argv[0]) +
                             "action=renamecollection&viewmode=view&collect=%s\")" % \
                                 (common.quote_param(collection[0]))),
-                           (common.getstring(30061),
+                           (common.getstring(30061), # Archive those pictures
                             "RunPlugin(\"%s?" % (sys.argv[0]) +
                             "action=showpics&method=collection&viewmode=zip&name=%s&collect=%s\")" % \
                                 (common.quote_param(collection[0]), common.quote_param(collection[0]))),
-                           (common.getstring(30062),
+                           (common.getstring(30062), # Export those pictures to...
                             "RunPlugin(\"%s?" % (sys.argv[0]) +
                             "action=showpics&method=collection&viewmode=export&name=%s&collect=%s\")" % \
                                 (common.quote_param(collection[0]), common.quote_param(collection[0])))]
             self.add_action(name=collection[0],
-                            params=[("method", "collection"), ("collect", collection[0]), 
-                                    ("page", "1"), ("viewmode", "slideshow")], # paramètres
-                            action="showpics",  # action
-                            iconimage=join(PIC_PATH, "folder_collections.png"),  # icone
-
-                            contextmenu=contextmenu)  # menucontextuel
-
+                            params=[("method", "collection"), ("collect", collection[0]), ("viewmode", "view")],
+                            action="showpics",
+                            iconimage=join(PIC_PATH, "folder_collections.png"),
+                            contextmenu=contextmenu)
+        """
+        (common.getstring(30169), # Show pictures
+        "Container.Update(\"%s?" % (sys.argv[0]) +
+        "action=showpics&method=collection&viewmode=view&name=%s&collect=%s\")" % \
+            (common.quote_param(collection[0]), common.quote_param(collection[0]))),
+        """
         xbmcplugin.addSortMethod(
             int(sys.argv[1]), xbmcplugin.SORT_METHOD_UNSORTED)
 
@@ -2089,15 +2091,14 @@ class Main:
 
         # we are showing pictures for a FOLDER selection
         elif self.args.method == "folders":
-            listid = [int(self.args.folderid)] + MPDB.all_children_of_folder(self.args.folderid)
-            common.log("show_pics", 'listid: %s' % listid, xbmc.LOGINFO)
+            folderid =int(self.args.folderid)
+            listid = [folderid] + MPDB.all_children_of_folder(self.args.folderid)
             _query = """
-                 SELECT p.FullPath,f.strFilename FROM Files f, Folders p 
-                   WHERE COALESCE(case ImageRating when '' then '0' else ImageRating end,'0') >= ? 
-                   AND f.idFolder=p.idFolder AND p.ParentFolder in ('%s') 
-                   ORDER BY ImageDateTime ASC 
-                   LIMIT %s OFFSET %s""" % ("','".join([str(i) for i in listid]), limit, offset)            
-            common.log("show_pics", 'sql: %s' % _query, xbmc.LOGINFO)
+                SELECT p.FullPath, f.strFilename FROM Files f, Folders p 
+                WHERE COALESCE(case ImageRating when '' then '0' else ImageRating end,'0') >= ? 
+                AND p.idFolder in ('%s') AND f.idFolder=p.idFolder 
+                ORDER BY ImageDateTime ASC 
+                LIMIT %s OFFSET %s""" % ("','".join([str(i) for i in listid]), limit, offset)            
             filelist = [row for row in MPDB.cur.request(_query, (min_rating,))]
 
         elif self.args.method == "collection":
