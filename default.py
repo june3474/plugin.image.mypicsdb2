@@ -110,7 +110,7 @@ class Main:
     def get_args(self):
         common.log("Main.get_args", 'MyPicturesDB plugin called with "%s".' % sys.argv[2][1:], xbmc.LOGINFO)
 
-        self.parm = common.smart_utf8(unquote(sys.argv[2])).replace("\\\\", "\\")
+        self.parm = unquote(sys.argv[2]).replace("\\\\", "\\")
         # change for ruuk's plugin screensaver
         self.parm = self.parm.replace('&plugin_slideshow_ss=true', '')
 
@@ -811,8 +811,6 @@ class Main:
 
         # context.append((common.getstring(30303),"SlideShow(%s%s,recursive,notrandom)"%(sys.argv[0],sys.argv[2])))
         for path, filename in picsfromfolder:
-            #path = common.smart_unicode(path)
-            #filename = common.smart_unicode(filename)
             common.log("Main.show_folders", "pic's path = %s  pic's name = %s" % (path, filename))
             count = count + 1
             context = [(common.getstring(30152), # Add to collection
@@ -842,18 +840,15 @@ class Main:
         place is a string for an address, or a couple of gps lat/lon data
         """
         
-        common.log("Main.show_map", "Start", xbmc.LOGINFO)
+        common.log("Main.show_map", "Start")
         try:
-            path = common.smart_unicode(self.args.path)
-            filename = common.smart_unicode(self.args.filename)
-            joined = common.smart_utf8(join(path, filename))
+            path = self.args.path
+            filename = self.args.filename
+            joined = join(path, filename)
         except:
-            try:
-                path = common.smart_utf8(self.args.path)
-                filename = common.smart_utf8(self.args.filename)
-                joined = join(path, filename)
-            except:
-                return
+            common.log("Main.show_map", "Error with parameter", xbmc.LOGERROR)
+            return
+
         common.log("Main.show_map", "Open Dialog", xbmc.LOGINFO)
         ui = googlemaps.GoogleMap(
             "script-mypicsdb-googlemaps.xml", common.getaddon_path(), "Default")
@@ -893,7 +888,6 @@ class Main:
                         newtagtrue = tag
                     else:
                         newtagtrue += "|||" + tag
-                newtagtrue = common.smart_unicode(newtagtrue)
                 common.log("Main.show_wizard", newtagtrue)
 
             if len(GlobalFilterFalse) > 0:
@@ -902,7 +896,6 @@ class Main:
                         newtagfalse = tag
                     else:
                         newtagfalse += "|||" + tag
-                newtagfalse = common.smart_unicode(newtagfalse)
 
             if len(GlobalFilterTrue) > 0 or len(GlobalFilterFalse) > 0 or start_date != '' or end_date != '':
                 xbmc.executebuiltin("Container.Update(%s?" % (sys.argv[0]) +
@@ -913,7 +906,6 @@ class Main:
             filterlist = MPDB.filterwizard_list_filters()
             total = len(filterlist)
             for filtername in filterlist:
-                filtername = common.smart_unicode(filtername)
                 common.log('Main.show_wizard', filtername)
                 params=[("method", "wizard_settings"), ("viewmode", "view"), ("filtername", filtername), 
                         ("period", ""), ("value", ""), ("page", "1")]
@@ -1045,7 +1037,7 @@ class Main:
                             if dateend != '':
                                 # now input the title for the period
                                 #
-                                kb = xbmc.Keyboard(common.smart_utf8(common.getstring(30109) % (datestart, dateend)),
+                                kb = xbmc.Keyboard(common.getstring(30109) % (datestart, dateend),
                                                    common.getstring(30110), False)
                                 kb.doModal()
                                 if (kb.isConfirmed()):
@@ -1054,8 +1046,7 @@ class Main:
                                     titreperiode = common.getstring(
                                         30109) % (datestart, dateend)
                                 # add the new period inside the database
-                                MPDB.period_add(common.smart_unicode(titreperiode), common.smart_unicode(datestart),
-                                                common.smart_unicode(dateend))
+                                MPDB.period_add(titreperiode, datestart, dateend)
                 update = True
             else:
                 common.log("show_period", "No pictures with an EXIF date stored in DB")
@@ -1510,8 +1501,7 @@ class Main:
         elif self.args.do == "delroot":
             try:
                 dialog = xbmcgui.Dialog()
-                if dialog.yesno(common.getstring(30250),
-                                common.smart_utf8(common.getstring(30251)) % common.smart_utf8(self.args.delpath)):
+                if dialog.yesno(common.getstring(30250), common.getstring(30251) % self.args.delpath):
                     common.log("Main.show_roots", 'delroot "%s"' % self.args.delpath)
                     MPDB.delete_root(self.args.delpath)
                     if self.args.delpath != 'neverexistingpath':
@@ -1592,7 +1582,6 @@ class Main:
             for path, recursive, update in includefolders:
                 srec = recursive == 1 and "ON" or "OFF"
                 supd = update == 1 and "ON" or "OFF"
-                path = common.smart_unicode(path)
 
                 self.add_action(
                     name="[COLOR=FF66CC00][B][ + ][/B][/COLOR] " + path +
@@ -1679,8 +1668,7 @@ class Main:
         dateend = strftime(
             "%Y-%m-%d", strptime(d.replace(" ", "0"), "%d/%m/%Y"))
 
-        kb = xbmc.Keyboard(common.smart_unicode(periodname),
-                           common.getstring(30110), False)
+        kb = xbmc.Keyboard(periodname, common.getstring(30110), False)
         kb.doModal()
         if (kb.isConfirmed()):
             titreperiode = kb.getText()
@@ -1712,9 +1700,8 @@ class Main:
         else:  # dans tous les autres cas, une collection existente choisie
             namecollection = listcollection[rets]
         # 3 associe en base l'id du fichier avec l'id de la collection
-        namecollection = common.smart_unicode(namecollection)
-        path = common.smart_unicode(self.args.path)
-        filename = common.smart_unicode(self.args.filename)
+        path = self.args.path
+        filename = self.args.filename
 
         MPDB.collection_add_pic(namecollection, path, filename)
         common.show_notification(common.getstring(30000), 
@@ -1746,10 +1733,7 @@ class Main:
 
         # 3 associe en base l'id du fichier avec l'id de la collection
         filelist = self.show_pics()  # on récupère les photos correspondantes à la vue
-        #namecollection = common.smart_unicode(namecollection)
         for path, filename in filelist:  # on les ajoute une par une
-            #path = common.smart_unicode(path)
-            #filename = common.smart_unicode(filename)
             MPDB.collection_add_pic(namecollection, path, filename)
 
         common.show_notification(common.getstring(30000),
@@ -2211,16 +2195,11 @@ class Main:
             compte = 0
             msg = ""
             for (path, filename) in filelist:
-                path = common.smart_unicode(path)
-                filename = common.smart_unicode(filename)
                 compte = compte + 1
-                picture = common.smart_unicode(join(path, filename))
-                arcroot = common.smart_unicode(
-                    path.replace(dirname(picture), ""))
-                arcname = common.smart_unicode(
-                    join(arcroot, filename).replace("\\", "/"))
-                if common.smart_unicode(picture) == common.smart_unicode(
-                        destination):  # sert à rien de zipper le zip lui même :D
+                picture = join(path, filename)
+                arcroot = path.replace(dirname(picture), "")
+                arcname = join(arcroot, filename).replace("\\", "/")
+                if picture == destination:  # sert à rien de zipper le zip lui même :D
                     continue
                 pDialog.update(int(100 * (compte / float(len(filelist)))), 
                                common.getstring(30067), picture)  # adding picture to the archive
@@ -2230,15 +2209,13 @@ class Main:
                         enc = 'cp850'
                     else:
                         enc = 'utf-8'
-                    tar.add(common.smart_unicode(picture).encode(sys_encoding),
-                            common.smart_unicode(arcname).encode(enc))
+                    tar.add(picture.encode(sys_encoding), arcname.encode(enc))
                 except:
                     common.log("show_pics >> zip",
                                "tar.gz compression error :", xbmc.LOGERROR)
                     error += 1
                     common.log("show_pics >> zip", 
-                               "Error  %s" % common.smart_unicode(arcname).encode(sys_encoding),
-                               xbmc.LOGERROR)
+                               "Error  %s" % arcname.encode(sys_encoding), xbmc.LOGERROR)
                     print_exc()
                 if pDialog.iscanceled():
                     # Zip file has been canceled !
@@ -2261,8 +2238,6 @@ class Main:
             dialog = xbmcgui.Dialog()
             # Choose the destination for exported pictures
             dstpath = dialog.browse(3, common.getstring(30180), "files", "", True, False, "")
-            dstpath = common.smart_unicode(dstpath)
-
             if dstpath == "":
                 return
 
@@ -2276,7 +2251,7 @@ class Main:
                     kb.doModal()
 
                     if (kb.isConfirmed()):
-                        subfolder = common.smart_unicode(kb.getText())
+                        subfolder = kb.getText()
                         try:
                             os.mkdir(join(dstpath, subfolder))
                             dstpath = join(dstpath, subfolder)
@@ -2297,10 +2272,6 @@ class Main:
             i = 0.0
             cpt = 0
             for path, filename in filelist:
-
-                path = common.smart_unicode(path)
-                filename = common.smart_unicode(filename)
-
                 pDialog.update(int(100 * i / len(filelist)), 
                                common.getstring(30185) % join(path, filename),
                                dstpath)  # "Copying '%s' to :"
@@ -2319,8 +2290,8 @@ class Main:
             common.show_notification(common.getstring(30000), 
                                      common.getstring(30189) % (cpt, dstpath), 3000,
                                      join(home, "icon.png"))
-            dialog.browse(2, common.getstring(30188), "files", "", True, False,
-                          dstpath)  # show the folder which contain pictures exported
+            # show the folder which contain pictures exported
+            dialog.browse(2, common.getstring(30188), "files", "", True, False, dstpath) 
             return
 
         if len(filelist) >= limit:
@@ -2334,8 +2305,6 @@ class Main:
         # fill the pictures list
         count = 0
         for path, filename in filelist:
-            #path = common.smart_unicode(path)
-            #filename = common.smart_unicode(filename)
             context = []
             count += 1
             # - add to collection
