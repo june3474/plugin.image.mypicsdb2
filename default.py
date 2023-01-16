@@ -42,9 +42,9 @@ except Exception as e:
 
 # MikeBZH44: commoncache for MyPicsDB with 1 hour timeout
 try:
-    import StorageServer
+    import mypicsdb.StorageServer as StorageServer
 except:
-    import storageserverdummy as StorageServer
+    import mypicsdb.storageserverdummy as StorageServer
 
 # set variables used by other modules
 sys_encoding = sys.getfilesystemencoding()
@@ -1269,17 +1269,13 @@ class Main:
                             "RunPlugin(\"%s?" % (sys.argv[0]) +
                             "action=showpics&method=collection&viewmode=export&name=%s&collect=%s\")" % \
                                 (common.quote_param(collection[0]), common.quote_param(collection[0])))]
-            self.add_action(name=collection[0],
-                            params=[("method", "collection"), ("collect", collection[0]), ("viewmode", "view")],
-                            action="showpics",
-                            iconimage=join(PIC_PATH, "folder_collections.png"),
-                            contextmenu=contextmenu)
-        """
-        (common.getstring(30169), # Show pictures
-        "Container.Update(\"%s?" % (sys.argv[0]) +
-        "action=showpics&method=collection&viewmode=view&name=%s&collect=%s\")" % \
-            (common.quote_param(collection[0]), common.quote_param(collection[0]))),
-        """
+            self.add_directory(name=collection[0], # Show pictures
+                               params=[("method", "collection"), ("viewmode", "view"),
+                                       ("collect", (common.quote_param(collection[0])))],
+                               action="showpics",
+                               iconimage=join(PIC_PATH, "folder_collections.png"),
+                               contextmenu=contextmenu)
+
         xbmcplugin.addSortMethod(
             int(sys.argv[1]), xbmcplugin.SORT_METHOD_UNSORTED)
 
@@ -2107,6 +2103,7 @@ class Main:
             else:
                 min_rating = 0
             filelist = MPDB.collection_get_pics(self.args.collect, min_rating)
+            common.log("show_pics", "method collection called, filelistL %s" % (filelist))
 
         elif self.args.method == "search":
             if int(common.getaddon_setting("ratingmini")) > 0:
@@ -2337,8 +2334,8 @@ class Main:
         # fill the pictures list
         count = 0
         for path, filename in filelist:
-            path = common.smart_unicode(path)
-            filename = common.smart_unicode(filename)
+            #path = common.smart_unicode(path)
+            #filename = common.smart_unicode(filename)
             context = []
             count += 1
             # - add to collection
@@ -2368,10 +2365,8 @@ class Main:
                              contextmenu=context,
                              fanart=self.find_fanart(path, filename))
         xbmcplugin.addSortMethod(int(sys.argv[1]), xbmcplugin.SORT_METHOD_DATE)
-        xbmcplugin.addSortMethod(
-            int(sys.argv[1]), xbmcplugin.SORT_METHOD_PROGRAM_COUNT)
-        xbmcplugin.addSortMethod(
-            int(sys.argv[1]), xbmcplugin.SORT_METHOD_LABEL)
+        xbmcplugin.addSortMethod(int(sys.argv[1]), xbmcplugin.SORT_METHOD_PROGRAM_COUNT)
+        xbmcplugin.addSortMethod(int(sys.argv[1]), xbmcplugin.SORT_METHOD_LABEL)
 
         self.change_view()
 
