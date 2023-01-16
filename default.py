@@ -573,9 +573,19 @@ class Main:
         # Collections
         if common.getaddon_setting('m_11') == 'true' or display_all:
             name = common.getstring(30150)
-            params = [("collect", ""), ("method", "show"), ("viewmode", "view")]
+            params = [("collect", ""), ("method", "show"), ("viewmode", "view"),
+                      ("usercollection", "")]
             iconimage = join(PIC_PATH, "folder_collections.png")
             self.add_directory(name, params, "showcollection", iconimage)
+
+         # User Collections Only
+        if common.getaddon_setting('m_11') == 'true' or display_all:
+            name = common.getstring(30670)
+            params = [("collect", ""), ("method", "show"), ("viewmode", "view"),
+                       ("usercollection", "1")]
+            iconimage = join(PIC_PATH, "folder_collections.png")
+            self.add_directory(name, params, "showcollection", iconimage)
+
 
         # Global search
         if common.getaddon_setting('m_12') == 'true' or display_all:
@@ -1213,28 +1223,28 @@ class Main:
         # /herve502
         else:
             refresh = False
-
-        self.add_directory(name=common.getstring(30160), # Create a new collection
-                           params=[("method", "setcollection"), ("collect", ""),
-                           ("viewmode", "view"), ],  # paramètres
-                           action="showcollection",  # action
-                           iconimage=join(PIC_PATH, "folder_collections.png"),  # icone
-                           contextmenu=None)  # menucontextuel
-        self.add_directory(name=common.getstring(30168), # Import album from saved filter setting
-                           params=[("method", "importcollection_wizard"),
-                                   ("collect", ""), ("viewmode", "view"), ],
-                           # paramètres
-                           action="showcollection",  # action
-                           iconimage=join(PIC_PATH, "folder_collections.png"),  # icone
-                           contextmenu=None)  # menucontextuel
-        # herve502
-        self.add_directory(name=common.getstring(30162), # Import album from Picasa xml
-                           params=[("method", "importcollection_picasa"),
-                                   ("collect", ""), ("viewmode", "view"), ], # paramètres
-                           action="showcollection",  # action
-                           iconimage=join(PIC_PATH, "folder_collections.png"),  # icone
-                           contextmenu=None)  # menucontextuel
-        # /herve520
+        if not self.args.usercollection:
+            self.add_directory(name=common.getstring(30160), # Create a new collection
+                            params=[("method", "setcollection"), ("collect", ""),
+                            ("viewmode", "view"), ],  # paramètres
+                            action="showcollection",  # action
+                            iconimage=join(PIC_PATH, "folder_collections.png"),  # icone
+                            contextmenu=None)  # menucontextuel
+            self.add_directory(name=common.getstring(30168), # Import album from saved filter setting
+                            params=[("method", "importcollection_wizard"),
+                                    ("collect", ""), ("viewmode", "view"), ],
+                            # paramètres
+                            action="showcollection",  # action
+                            iconimage=join(PIC_PATH, "folder_collections.png"),  # icone
+                            contextmenu=None)  # menucontextuel
+            # herve502
+            self.add_directory(name=common.getstring(30162), # Import album from Picasa xml
+                            params=[("method", "importcollection_picasa"),
+                                    ("collect", ""), ("viewmode", "view"), ], # paramètres
+                            action="showcollection",  # action
+                            iconimage=join(PIC_PATH, "folder_collections.png"),  # icone
+                            contextmenu=None)  # menucontextuel
+            # /herve520
         for collection in MPDB.collections_list():
             contextmenu = [(common.getstring(30303), # Show the slideshow
                             "RunPlugin(\"%s?" % (sys.argv[0]) +

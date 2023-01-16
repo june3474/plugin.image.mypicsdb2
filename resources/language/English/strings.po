@@ -826,7 +826,12 @@ msgctxt "#30669"
 msgid "Sqlite DB Name"
 msgstr ""
 
-#empty strings from id 30670 to 30699
+msgctxt "#30670"
+msgid "User Collections Only"
+msgstr ""
+
+
+#empty strings from id 30671 to 30699
 
 # tag type translation
 msgctxt "#30700"
