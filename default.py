@@ -76,8 +76,7 @@ files_fields_description = {
 
 class _Info:
     def __init__(self, params):
-        _args = parse_qsl(params, separator=',')
-        self.__dict__.update(_args)
+        self.__dict__.update(params)
 
     def has_key(self, key):
         return key in self.__dict__
@@ -129,7 +128,7 @@ class Main:
         in_apostrophe = False
         prev_char = ""
         prevprev_char = ""
-        output = ""
+        params = ""
 
         for char in parm:
             if (char == "'" and prev_char != "\\") or \
@@ -141,7 +140,7 @@ class Main:
             if char == "&" and not in_apostrophe:
                 char = ","
 
-            output += char
+            params += char
 
             prevprev_char = prev_char
             prev_char = char
@@ -149,7 +148,15 @@ class Main:
                 prev_char = ""
                 prevprev_char = ""
 
-        return output
+        # handle parameters without value
+        ret = {}
+        for p in params.split(','):
+            try:
+                k, v = p.split('=')
+                ret[k] = v
+            except ValueError:
+                ret[p] = ''
+        return ret
 
     def is_picture(self, filename):
         ext = splitext(filename)[1][1:].upper()
