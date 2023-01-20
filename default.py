@@ -1561,7 +1561,7 @@ class Main:
         common.show_notification(common.getstring(30000),
                                  common.getstring(30161) % len(
                                      filelist) + ' ' + namecollection, 3000,
-                                 join(home, "icon.png"))
+                                 join(HOME, "icon.png"))
 
 
     def collection_delete(self):
