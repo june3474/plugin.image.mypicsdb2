@@ -118,8 +118,7 @@ class Main:
                 # By using path instead of plugin call, kodi will generate a thumbnail with 4 pics in the folder.
                 u = path
             else:
-                u = sys.argv[0] + "?" + parameter + "&action=" + action + "&name=" + \
-                    common.quote_param(name)
+                u = sys.argv[0] + "?" + parameter + "&action=" + action + "&name=" + common.quote_param(name)
 
             liz = xbmcgui.ListItem(label=name)
             liz.setProperty("mypicsdb", "True")
@@ -246,13 +245,13 @@ class Main:
                 liz.setArt({'fanart': fanart})
                 liz.setProperty('fanart_image', fanart)
 
-            # if contextmenu:
+            if contextmenu:
             #    if coords:
             #        common.log("Main.add_picture", "Picture has geolocation", xbmc.LOGINFO)
             #        contextmenu.append((common.getstring(30220),\
             #                            "RunPlugin(\"%s?action='geolocate'&place='%s'&path='%s'&filename='%s'&viewmode='view'\",)" %\
             #                            (sys.argv[0],"%0.6f,%0.6f" % (coords))
-            #    liz.addContextMenuItems(contextmenu)
+                liz.addContextMenuItems(contextmenu)
 
             return xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]), url=fullfilepath, listitem=liz, isFolder=False)
         except Exception as msg:
@@ -379,7 +378,6 @@ class Main:
                        ("usercollection", "1")]
             iconimage = join(PIC_PATH, "folder_collections.png")
             self.add_directory(name, params, "showcollection", iconimage)
-
 
         # Global search
         if common.getaddon_setting('m_12') == 'true' or display_all:
@@ -1075,7 +1073,7 @@ class Main:
                             "action=showpics&method=collection&viewmode=export&name=%s&collect=%s\")" % \
                                 (common.quote_param(collection[0]), common.quote_param(collection[0])))]
             self.add_directory(name=collection[0], # Show user collections
-                               params=[("method", "collection"), ("viewmode", "view"),
+                               params=[("method", "collection"), ("viewmode", "view"), ("page", "1"),
                                        ("collect", (common.quote_param(collection[0])))],
                                action="showpics",
                                iconimage=join(PIC_PATH, "folder_collections.png"),
@@ -1246,7 +1244,7 @@ class Main:
                 common.log("Main.show_roots",
                            'Exclude folder "%s" added' % newroot)
                 # xbmc.executebuiltin("Notification(%s,%s,%s,%s)" 
-                # % (common.getstring(30000),common.getstring(30204),3000,join(home,"icon.png")))
+                # % (common.getstring(30000),common.getstring(30204),3000,join(HOME,"icon.png")))
                 dialogok = xbmcgui.Dialog()
                 dialogok.ok(common.getstring(30000), 
                             common.getstring(30217) + ' ' + common.getstring(30218))
@@ -1280,7 +1278,7 @@ class Main:
                     common.log("Main.show_roots", 
                                'MPDB.add_root_folder failed for "%s"' % newroot, xbmc.LOGERROR)
                 common.show_notification(common.getstring(30000), 
-                                         common.getstring(30204), 3000, join(home, "icon.png"))
+                                         common.getstring(30204), 3000, join(HOME, "icon.png"))
 
                 if common.getaddon_setting('scanning') == 'false':
                     # do a scan now ?
@@ -1325,7 +1323,7 @@ class Main:
                         common.show_notification(common.getstring(30000), 
                                                  common.getstring(30205), 
                                                  3000, 
-                                                 join(home, "icon.png"))
+                                                 join(HOME, "icon.png"))
             except IndexError as msg:
                 common.log("Main.show_roots", 'delroot IndexError %s - %s' %
                            (IndexError, msg), xbmc.LOGERROR)
@@ -1333,8 +1331,7 @@ class Main:
         elif self.args['do'] == "rootclic":
             if common.getaddon_setting('scanning') == 'false':
                 if str(self.args['exclude']) == "0":
-                    path, recursive, update, exclude = MPDB.get_root_folders(
-                        self.args['rootpath'])
+                    path, recursive, update, exclude = MPDB.get_root_folders(self.args['rootpath'])
                     common.run_script("%s,%s --rootpath=%s" % (
                         "script.module.mypicsdb2scan", recursive and "-r, " or "", common.quote_param(path)))
                 else:
@@ -1410,10 +1407,10 @@ class Main:
                     action="rootfolders", # action
                     iconimage=join(PIC_PATH, "folder_paths.png"), # icone
                     # menucontextuel
-                    contextmenu=[(common.getstring(30206),
+                    contextmenu=[(common.getstring(30206), # Do a scan now
                                   "Notification(TODO: scan folder,scan this folder now !,3000,%s)" % \
-                                      join(home,"icon.png")),
-                                 (common.getstring(30207),
+                                      join(HOME,"icon.png")),
+                                 (common.getstring(30207), # Delete this path from database
                                   "Container.Update(\"%s?" % (sys.argv[0]) +
                                   "action=rootfolders&do=delroot&delpath=%s&exclude=1&viewmode=view\",)" % \
                                       (common.quote_param(path)))])
@@ -1527,9 +1524,9 @@ class Main:
         MPDB.collection_add_pic(namecollection, path, filename)
         common.show_notification(common.getstring(30000), 
                                  common.getstring(30154) + ' ' + namecollection, 
-                                 3000, join(home, "icon.png"))
+                                 3000, join(HOME, "icon.png"))
         # xbmc.executebuiltin( "Notification(%s,%s %s,%s,%s)" % 
-        # (common.getstring(30000),common.getstring(30154),namecollection,3000,join(home,"icon.png")))
+        # (common.getstring(30000),common.getstring(30154),namecollection,3000,join(HOME,"icon.png")))
 
 
     def collection_add_folder(self):
@@ -2011,8 +2008,8 @@ class Main:
                 if not ok:
                     # todo, ask for another name and if cancel, cancel the zip process as well
                     common.show_notification(common.getstring(30000), common.getstring(30066), 
-                                             3000, join(home, "icon.png"))
-                    # xbmc.executebuiltin("Notification(%s,%s,%s,%s)"%(common.getstring(30000),common.getstring(30066),3000,join(home,"icon.png")))
+                                             3000, join(HOME, "icon.png"))
+                    # xbmc.executebuiltin("Notification(%s,%s,%s,%s)"%(common.getstring(30000),common.getstring(30066),3000,join(HOME,"icon.png")))
                     return
                 else:
                     pass  # user is ok to overwrite, let's go on
@@ -2061,7 +2058,7 @@ class Main:
                     # %s files successfully Zipped !!
                     msg = common.getstring(30070) % len(filelist)
             common.show_notification(common.getstring(
-                30000), msg, 3000, join(home, "icon.png"))
+                30000), msg, 3000, join(HOME, "icon.png"))
             return
 
         if self.args['viewmode'] == "export":
@@ -2093,7 +2090,7 @@ class Main:
                                       "Error#%s : %s" % msg.args)
                     else:
                         common.show_notification(common.getstring(30000), common.getstring(30183), 3000,
-                                                 join(home, "icon.png"))
+                                                 join(HOME, "icon.png"))
                         return
 
             from shutil import copy
@@ -2120,7 +2117,7 @@ class Main:
             xbmc.sleep(1000)
             common.show_notification(common.getstring(30000), 
                                      common.getstring(30189) % (cpt, dstpath), 3000,
-                                     join(home, "icon.png"))
+                                     join(HOME, "icon.png"))
             # show the folder which contain pictures exported
             dialog.browse(2, common.getstring(30188), "files", "", True, False, dstpath) 
             return
@@ -2139,20 +2136,20 @@ class Main:
             context = []
             count += 1
             # - add to collection
-            context.append((common.getstring(30152),
+            context.append((common.getstring(30152), # Add to collection
                             "RunPlugin(\"%s?" % (sys.argv[0]) +
                             "action=addtocollection&viewmode=view&path=%s&filename=%s\")" % \
                                 (common.quote_param(path), common.quote_param(filename))))
             # - del pic from collection :
-            if self.args['method'] == "collection":
-                context.append((common.getstring(30151),
+            if self.args['method'] == "collection": 
+                context.append((common.getstring(30151), # Remove from the collection
                                 "RunPlugin(\"%s?" % (sys.argv[0]) +
                                 "action=delfromcollection&viewmode=view&collect=%s&path=%s&filename=%s\")" % \
                                     (common.quote_param(self.args['collect']),
                                      common.quote_param(path),
                                      common.quote_param(filename))))
             # 3 -
-            context.append((common.getstring(30060),
+            context.append((common.getstring(30060), # Locate on disk
                             "RunPlugin(\"%s?" % (sys.argv[0]) +
                             "action=locate&filepath=%s&viewmode=view\" ,)" % \
                                 (common.quote_param(join(path, filename)))))
