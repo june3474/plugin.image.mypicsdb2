@@ -85,7 +85,7 @@ class Main:
             common.log("Main.__init__", "%s - %s" % (Exception, str(msg)), xbmc.LOGERROR)
             raise msg
 
-        common.log("Main.get_args", 'MyPicturesDB plugin called with "%s".' % sys.argv[2][1:], xbmc.LOGINFO)
+        common.log("Main.get_args", 'MyPicturesDB plugin called with "%s".' % sys.argv[2][1:])
         self.parm = self.get_args()
         self.args = defaultdict(str)
         self.args.update(parse_qsl(self.parm))
@@ -653,7 +653,7 @@ class Main:
             common.log("Main.show_map", "Error with parameter", xbmc.LOGERROR)
             return
 
-        common.log("Main.show_map", "Open Dialog", xbmc.LOGINFO)
+        common.log("Main.show_map", "Open Dialog")
         ui = googlemaps.GoogleMap(
             "script-mypicsdb-googlemaps.xml", common.getaddon_path(), "Default")
         ui.set_file(joined)
@@ -661,7 +661,7 @@ class Main:
         ui.set_datapath(DATA_PATH)
         ui.doModal()
         del ui
-        common.log("Main.show_map", "Close Dialog", xbmc.LOGINFO)
+        common.log("Main.show_map", "Close Dialog")
 
 
     def show_help(self):
@@ -917,17 +917,16 @@ class Main:
             MPDB.collection_new(namecollection)
             refresh = True
         # import a collection from Filter Wizard Settings
-        elif self.args['method'] == "importcollection_wizard":  
+        elif self.args['method'] == "importcollection_wizard":
             filters = MPDB.filterwizard_list_filters()
             dialog = xbmcgui.Dialog()
             ret = dialog.select(common.getstring(30608), filters)
             if ret > -1:
                 # ask user for name of new collection
                 collection_name = filters[ret]
-                kb = xbmc.Keyboard(
-                    collection_name, common.getstring(30155), False)
+                kb = xbmc.Keyboard(collection_name, common.getstring(30155), False)
                 kb.doModal()
-                if (kb.isConfirmed()):
+                if kb.isConfirmed():
                     collection_name = kb.getText()
                     # MPDB.collection_add_dyn_data(collection_name, filters[ret], 'FilterWizard')
                     rows = MPDB.filterwizard_get_pics_from_filter(filters[ret], 0)
@@ -935,12 +934,10 @@ class Main:
                     if rows != None:
                         MPDB.collection_new(collection_name)
                         for pathname, filename in rows:
-                            MPDB.collection_add_pic(
-                                collection_name, pathname, filename)
+                            MPDB.collection_add_pic(collection_name, pathname, filename)
                     else:
-                        common.log("show_collection", str(filters[ret]) + 
-                                   " is empty and therefore not created.",
-                                   xbmc.LOGINFO)
+                        common.log("show_collection", 
+                                   str(filters[ret]) + "is empty and therefore not created.")
             refresh = True
 
         # herve502
@@ -1361,7 +1358,7 @@ class Main:
                     includefolders.append([path, recursive, update])
 
             # Add XBMC picutre sources to database
-            self.add_action(name=common.getstring(30216), # Add all Kodi pictures sources to database                            # paramètres
+            self.add_action(name=common.getstring(30216), # Add all Kodi pictures sources to database
                             params=[("do", "addpicturessource"),
                                     ("viewmode", "view"), ("exclude", "0")],
                             action="rootfolders",  # action
