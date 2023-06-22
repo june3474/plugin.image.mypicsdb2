@@ -41,7 +41,7 @@ def is_video(filename):
     Returns (boolean):
         True if the file is a video file, otherwise None
     """
-        
+
     ext = splitext(filename)[1][1:].upper()
     return ext in [ext.upper() for ext in ADDON.getSetting("vidsext").split("|")]
 
@@ -56,7 +56,7 @@ def find_fanart(path, filename):
         filename (str): filename
 
     Returns (str):
-        path to a fanart file if found, Otherwise path to the default fanart file 
+        path to a fanart file if found, Otherwise path to the default fanart file
     """
 
     filepath = join(path, filename)
@@ -92,12 +92,12 @@ def find_folder_thumb(folderpath):
         folder_file = join(folderpath, f)
         if exists(folder_file):
             return folder_file
-    
+
     return None
 
 
 def calc_crc(url):
-    """Calcurate crc of the url.
+    """Calculate crc of the url.
 
     The crc can be used to find cached thumbnail.
 
@@ -105,9 +105,9 @@ def calc_crc(url):
         url (str): quoted url to a file or folder
 
     Returns (str):
-        32bit crc in the form of OxFFFFFFFF 
+        32bit crc in the form of OxFFFFFFFF
     """
-            
+
     CRC_TAB = [
         0x00000000, 0x04C11DB7, 0x09823B6E, 0x0D4326D9,
         0x130476DC, 0x17C56B6B, 0x1A864DB2, 0x1E475005,
@@ -186,7 +186,7 @@ def calc_crc(url):
 
 def find_cached_thumb_crc(folderpath):
     """Get cached thumnails for the given folder
-    
+
     This function finds thumb by computing CRC, not by openning texturexx.db.
     Thus, result is NOT 100% accurate due to the possible CRC collision.
     This method is not currently used.
@@ -207,7 +207,7 @@ def find_cached_thumb_crc(folderpath):
     # kodi seems(?) to add an extra '/' at the end of the folder url
     path_quoted = cache_prefix + quote(folderpath, safe='()') + '/'
     crc = calc_crc(path_quoted.lower())
-    # For exmaple, if crc == abac56ba, 
+    # For exmaple, if crc == abac56ba,
     # the thumbnail is stored as 'special://thumbnails/a/abac56ba.[png|jpg]'
     thumb_files = (join(thumb_base_folder, crc[2], crc[2:] + '.png'),
                     join(thumb_base_folder, crc[2], crc[2:] + '.jpg'))

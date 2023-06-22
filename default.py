@@ -136,7 +136,7 @@ class Main:
             pass
 
 
-    def add_action(self, name, params, action, iconimage, fanart=None, 
+    def add_action(self, name, params, action, iconimage, fanart=None,
                    contextmenu=None, total=0, info="*", replacemenu=True):
         try:
             try:
@@ -191,7 +191,7 @@ class Main:
                 if coords:
                     suffix = suffix + "[COLOR=C0C0C0C0][G][/COLOR]"
                 _query = """
-                    select coalesce(tc.TagContent,0), tt.TagType 
+                    select coalesce(tc.TagContent,0), tt.TagType
                     from TagTypes tt, TagContents tc, TagsInFiles tif, Files fi
                     where tt.TagType in ( 'EXIF ExifImageLength', 'EXIF ExifImageWidth' )
                     and tt.idTagType = tc.idTagType
@@ -283,7 +283,7 @@ class Main:
         # last scan picture added
         if common.getaddon_setting('m_1') == 'true' or display_all:
             name = common.getstring(30209) % common.getaddon_setting("recentnbdays")
-            params = [("method", "recentpicsdb"), ("period", ""), ("value", ""), 
+            params = [("method", "recentpicsdb"), ("period", ""), ("value", ""),
                       ("page", "1"), ("viewmode", "view")]
             iconimage = join(PIC_PATH, "folder_recent_added.png")
             self.add_directory(name, params, "showpics", iconimage)
@@ -317,7 +317,7 @@ class Main:
 
         # show filter wizard
         self.add_action(common.getstring(30600),
-                        [("wizard", "dialog"), ("viewmode", "view")], 
+                        [("wizard", "dialog"), ("viewmode", "view")],
                         "showwizard",
                         join(PIC_PATH, "folder_wizard.png"))
 
@@ -388,26 +388,26 @@ class Main:
 
         # picture sources
         self.add_directory(common.getstring(30099),
-                           [("do", "showroots"), ("viewmode", "view")], 
+                           [("do", "showroots"), ("viewmode", "view")],
                            "rootfolders",
                            join(PIC_PATH, "folder_paths.png"))
 
         # Settings
         self.add_action(common.getstring(30009),
-                        [("showsettings", ""), ("viewmode", "view")], 
+                        [("showsettings", ""), ("viewmode", "view")],
                         "showsettings",
                         join(PIC_PATH, "folder_settings.png"))
 
         # Translation Editor
         self.add_action(common.getstring(30620),
                         [("showtranslationeditor", ""),
-                         ("viewmode", "view")], 
+                         ("viewmode", "view")],
                          "showtranslationeditor",
                         join(PIC_PATH, "folder_translate.png"))
 
         # Show readme
         self.add_action(common.getstring(30123),
-                        [("help", ""), ("viewmode", "view")], 
+                        [("help", ""), ("viewmode", "view")],
                         "help",
                         join(PIC_PATH, "folder_help.png"))
 
@@ -493,7 +493,7 @@ class Main:
             allperiod, self.args['value'], min_rating)
         if count > 0 and self.args['period'] == "year":
             self.add_directory(name=common.getstring(30054) % (count),
-                               params=[("method", "date"), ("period", "wo"), ("value", self.args['value']), 
+                               params=[("method", "date"), ("period", "wo"), ("value", self.args['value']),
                                        ("page", ""), ("viewmode", "view")],
                                # paramètres
                                action="showpics",  # action
@@ -541,12 +541,12 @@ class Main:
 
     def show_folders(self):
         common.log("Main.show_folders", "start")
-        
+
         if int(common.getaddon_setting("ratingmini")) > 0:
             min_rating = int(common.getaddon_setting("ratingmini"))
         else:
             min_rating = 0
-        
+
         if self.args['folderid'] == 'all':  # get all folders
             childrenfolders = [row for row in MPDB.cur.request(
                 "SELECT idFolder,FolderName FROM Folders")]
@@ -568,7 +568,7 @@ class Main:
             count = MPDB.count_pics_in_folder(idchildren, min_rating)
             if count > 0:
                 name="%s (%s %s)" % (childrenfolder, count, common.getstring(30050))
-                params=[("method", "folders"), ("folderid", str(idchildren)), 
+                params=[("method", "folders"), ("folderid", str(idchildren)),
                         ("onlypics", "non"), ("viewmode", "view")]
                 contextmenu=[(common.getstring(30212), # Exclude this folder from database
                             "Container.Update(\"%s?" % (sys.argv[0]) +
@@ -579,8 +579,8 @@ class Main:
                              "action=addfolder&method=folders&viewmode=scan&folderid=%s\")" % \
                              (common.quote_param(str(idchildren))))]
 
-                thumb = utils.find_folder_thumb(path) or None
-                self.add_directory(name=name, 
+                thumb = utils.find_folder_thumb(path)
+                self.add_directory(name=name,
                                    params=params,
                                    action="showfolder",
                                    iconimage=thumb,
@@ -591,18 +591,18 @@ class Main:
         # maintenant, on liste les photos si il y en a, du dossier en cours
         if min_rating > 0:
             _query = """
-                    SELECT p.FullPath, f.strFilename 
-                    FROM Files f, Folders p 
-                    WHERE f.idFolder=p.idFolder AND f.idFolder=? AND f.ImageRating > ? 
+                    SELECT p.FullPath, f.strFilename
+                    FROM Files f, Folders p
+                    WHERE f.idFolder=p.idFolder AND f.idFolder=? AND f.ImageRating > ?
                     Order by f.imagedatetime
             """
             picsfromfolder = [row for row in MPDB.cur.request_with_binds(
                 _query, (self.args['folderid'], min_rating,))]
         else:
             _query = """
-                SELECT p.FullPath, f.strFilename 
-                FROM Files f, Folders p 
-                WHERE f.idFolder=p.idFolder AND f.idFolder=? 
+                SELECT p.FullPath, f.strFilename
+                FROM Files f, Folders p
+                WHERE f.idFolder=p.idFolder AND f.idFolder=?
                 Order by f.imagedatetime
             """
             picsfromfolder = [row for row in MPDB.cur.request_with_binds(
@@ -618,7 +618,7 @@ class Main:
             context = [(common.getstring(30152), # Add to collection
                     "RunPlugin(\"%s?" % (sys.argv[0]) +
                     "action=addtocollection&viewmode=view&path=%s&filename=%s\")" % \
-                    (common.quote_param(path), common.quote_param(filename)))]            
+                    (common.quote_param(path), common.quote_param(filename)))]
             self.add_picture(filename, path, count=count, contextmenu=context,
                              fanart=utils.find_fanart(path, filename))
 
@@ -632,18 +632,18 @@ class Main:
 
 
     def show_translationeditor(self):
-        ui = translationeditor.TranslationEditor("script-mypicsdb-translationeditor.xml", 
+        ui = translationeditor.TranslationEditor("script-mypicsdb-translationeditor.xml",
                                                  common.getaddon_path(), "Default")
         ui.doModal()
         del ui
 
 
     def show_map(self):
-        """get a google map for the given place 
-        
+        """get a google map for the given place
+
         place is a string for an address, or a couple of gps lat/lon data
         """
-        
+
         common.log("Main.show_map", "Start")
         try:
             path = self.args['path']
@@ -714,7 +714,7 @@ class Main:
             total = len(filterlist)
             for filtername in filterlist:
                 common.log('Main.show_wizard', filtername)
-                params=[("method", "wizard_settings"), ("viewmode", "view"), ("filtername", filtername), 
+                params=[("method", "wizard_settings"), ("viewmode", "view"), ("filtername", filtername),
                         ("period", ""), ("value", ""), ("page", "1")]
                 self.add_directory(name="%s" % (filtername),
                                    params=params,
@@ -812,7 +812,7 @@ class Main:
             if len(nameddates):
                 dialog = xbmcgui.Dialog()
                 # dateofpics) choose the start date
-                rets = dialog.select(common.getstring(30107), 
+                rets = dialog.select(common.getstring(30107),
                                      ["[[%s]]" % common.getstring(30114)] + nameddates)
                 if not rets == -1:  # is not canceled
                     if rets == 0:  # input manually the date
@@ -830,7 +830,7 @@ class Main:
 
                     if datestart != '':
                         # dateofpics[deb:])#choose the end date (all dates before startdate are ignored to preserve begin/end)
-                        retf = dialog.select(common.getstring(30108), ["[[%s]]" % common.getstring(30114)] + nameddates[deb:])  
+                        retf = dialog.select(common.getstring(30108), ["[[%s]]" % common.getstring(30114)] + nameddates[deb:])
                         if not retf == -1:  # if end date is not canceled...
                             if retf == 0:  # choix d'un date de fin manuelle ou choix précédent de la date de début manuelle
                                 d = dialog.numeric(1, common.getstring(30118),
@@ -864,7 +864,7 @@ class Main:
         # search for inbase periods and show periods
         for periodname, dbdatestart, dbdateend in MPDB.periods_list():
             datestart, dateend = MPDB.period_dates_get_pics(dbdatestart, dbdateend)
-            period = common.getstring(30113) % (datestart.strftime(common.getstring(30002)), 
+            period = common.getstring(30113) % (datestart.strftime(common.getstring(30002)),
                                                 dateend.strftime(common.getstring(30002)))
             contextmenu=[(common.getstring(30111),
                           "RunPlugin(\"%s?" % (sys.argv[0]) +
@@ -878,7 +878,7 @@ class Main:
                           "RunPlugin(\"%s?" % (sys.argv[0]) +
                           "action=addfolder&method=date&period=period&datestart=%s&dateend=%s&viewmode=scan\")" % \
                               (datestart, dateend))]
-                                            
+
             self.add_directory(name="%s [COLOR=C0C0C0C0](%s)[/COLOR]" % (periodname, period), # libellé
                                params=[("method", "date"), ("period", "period"), ("datestart", datestart),
                                        ("dateend", dateend), ("page", "1"), ("viewmode", "view")], # paramètres
@@ -936,7 +936,7 @@ class Main:
                         for pathname, filename in rows:
                             MPDB.collection_add_pic(collection_name, pathname, filename)
                     else:
-                        common.log("show_collection", 
+                        common.log("show_collection",
                                    str(filters[ret]) + "is empty and therefore not created.")
             refresh = True
 
@@ -970,7 +970,7 @@ class Main:
                                "setcollection = %s" % collection_name)
 
                     MPDB.collection_new(collection_name)
-                    
+
                     # Xycl get pictures with complete path name
                     file_names = album.getElementsByTagName("itemOriginalPath")
                     for itemName in file_names:  # iterate over the nodes
@@ -987,8 +987,8 @@ class Main:
                             # if no row returns then the [0] at the end of select below will raise an exception.
                             # easy test of existence of file in DB
                             _query = """
-                                select strFilename, strPath 
-                                from Files 
+                                select strFilename, strPath
+                                from Files
                                 where lower(strFilename) = ? and lower(strPath) = ?"
                             """
                             filename, pathname = MPDB.cur.request_with_binds(
@@ -998,8 +998,8 @@ class Main:
                             try:
                                 # Secondly we use the stored path in DB without last character
                                 _query = """
-                                    select strFilename, strPath 
-                                    from Files 
+                                    select strFilename, strPath
+                                    from Files
                                     where lower(strFilename) = ? and substr(lower(strPath), 1, length(strPath)-1) = ?"
                                 """
                                 filename, pathname = MPDB.cur.request_with_binds(
@@ -1098,7 +1098,7 @@ class Main:
             ret = dialog.select(common.getstring(30121), filters)
             if ret > 0:
                 motrecherche = filters[ret]
-                # Save is important because there are only 10 saved searches and 
+                # Save is important because there are only 10 saved searches and
                 # due to save call the search gets a new key!!!
                 MPDB.search_save(motrecherche)
             elif ret == -1:
@@ -1146,7 +1146,7 @@ class Main:
                                 "action=addfolder&method=search&field=%s&searchterm=%s&viewmode=scan\")" % \
                                     (tag, motrecherche))]
                 self.add_directory(name=common.getstring(30116) % (compte, motrecherche, tag),
-                                   # files_fields_description.has_key(colname) 
+                                   # files_fields_description.has_key(colname)
                                    # and files_fields_description[colname] or colname),
                                    params=[("method", "search"), ("field", "%s" % tag),
                                            ("searchterm", "%s" % motrecherche), ("page", "1"),
@@ -1212,12 +1212,12 @@ class Main:
                             newpartialroot = source[12:-1].split('/')
                             for item in newpartialroot:
                                 # TODO : traiter le exclude (=0 pour le moment) pour gérer les chemins à exclure
-                                MPDB.add_root_folder(unquote(item), True, True, 0)  
-                                common.log("Main.show_roots", 
+                                MPDB.add_root_folder(unquote(item), True, True, 0)
+                                common.log("Main.show_roots",
                                            'Multipath addroot for part "%s" done' % unquote(item))
                         else:
                             # TODO : traiter le exclude (=0 pour le moment) pour gérer les chemins à exclure
-                            MPDB.add_root_folder(source, True, True, 0)  
+                            MPDB.add_root_folder(source, True, True, 0)
                             common.log("Main.show_roots",
                                        'Singlepath addroot "%s" done' % source)
 
@@ -1225,7 +1225,7 @@ class Main:
                             "action=rootfolders&do=showroots&exclude=0&viewmode=view\")")
 
                     except:
-                        common.log("Main.show_roots", 
+                        common.log("Main.show_roots",
                                    'MPDB.add_root_folder failed for "%s"' % source, xbmc.LOGERROR)
 
                 if common.getaddon_setting('scanning') == 'false':
@@ -1240,15 +1240,15 @@ class Main:
                     "action=rootfolders&do=showroots&exclude=1&viewmode=view\")")
                 common.log("Main.show_roots",
                            'Exclude folder "%s" added' % newroot)
-                # xbmc.executebuiltin("Notification(%s,%s,%s,%s)" 
+                # xbmc.executebuiltin("Notification(%s,%s,%s,%s)"
                 # % (common.getstring(30000),common.getstring(30204),3000,join(HOME,"icon.png")))
                 dialogok = xbmcgui.Dialog()
-                dialogok.ok(common.getstring(30000), 
+                dialogok.ok(common.getstring(30000),
                             common.getstring(30217) + ' ' + common.getstring(30218))
             else:
                 recursive = dialog.yesno(common.getstring(30000),
                                          common.getstring(30202)) and 1 or 0  # browse recursively this folder ?
-                # dialog.yesno(common.getstring(30000),common.getstring(30203)) and 1 or 0 
+                # dialog.yesno(common.getstring(30000),common.getstring(30203)) and 1 or 0
                 # Remove files from database if pictures does not exists?
                 update = True
 
@@ -1259,12 +1259,12 @@ class Main:
                         newpartialroot = newroot[12:-1].split('/')
                         # TODO : traiter le exclude (=0 pour le moment) pour gérer les chemins à exclure
                         for item in newpartialroot:
-                            MPDB.add_root_folder(unquote(item), recursive, update, 0)  
-                            common.log("Main.show_roots", 
+                            MPDB.add_root_folder(unquote(item), recursive, update, 0)
+                            common.log("Main.show_roots",
                                        'Multipath addroot for part "%s" done' % unquote(item))
                     else:
                         # TODO : traiter le exclude (=0 pour le moment) pour gérer les chemins à exclure
-                        MPDB.add_root_folder(newroot, recursive, update, 0)  
+                        MPDB.add_root_folder(newroot, recursive, update, 0)
                         common.log("Main.show_roots",
                                    'Singlepath addroot "%s" done' % newroot)
 
@@ -1272,9 +1272,9 @@ class Main:
                                         "action=rootfolders&do=showroots&exclude=0&viewmode=view\")")
 
                 except:
-                    common.log("Main.show_roots", 
+                    common.log("Main.show_roots",
                                'MPDB.add_root_folder failed for "%s"' % newroot, xbmc.LOGERROR)
-                common.show_notification(common.getstring(30000), 
+                common.show_notification(common.getstring(30000),
                                          common.getstring(30204), 3000, join(HOME, "icon.png"))
 
                 if common.getaddon_setting('scanning') == 'false':
@@ -1306,7 +1306,7 @@ class Main:
         # I don't think that this is ever called because no user knows about it
         elif self.args['do'] == "addrootfolder":
             if str(self.args['exclude']) == "1":
-                common.log("Main.show_roots", 
+                common.log("Main.show_roots",
                            'addrootfolder "%s" (exclude) from context menu' % self.args['addpath'])
                 MPDB.add_root_folder(self.args['addpath'], 0, 0, 1)
 
@@ -1317,9 +1317,9 @@ class Main:
                     common.log("Main.show_roots", 'delroot "%s"' % self.args['delpath'])
                     MPDB.delete_root(self.args['delpath'])
                     if self.args['delpath'] != 'neverexistingpath':
-                        common.show_notification(common.getstring(30000), 
-                                                 common.getstring(30205), 
-                                                 3000, 
+                        common.show_notification(common.getstring(30000),
+                                                 common.getstring(30205),
+                                                 3000,
                                                  join(HOME, "icon.png"))
             except IndexError as msg:
                 common.log("Main.show_roots", 'delroot IndexError %s - %s' %
@@ -1415,7 +1415,7 @@ class Main:
             # Add a folder to exclude
             if len(includefolders) >= 0:
                 self.add_action(name=common.getstring(30211), # add a folder to exclude
-                                params=[("do", "addroot"), ("viewmode","view"), 
+                                params=[("do", "addroot"), ("viewmode","view"),
                                         ("exclude", "1")], # paramètres
                                 action="rootfolders",  # action
                                 iconimage=join(PIC_PATH, "folder_paths.png"),  # icone
@@ -1442,7 +1442,7 @@ class Main:
 
     def prettydate(self, dateformat, datetuple):
         """date string formater (see strftime format)
-        
+
         Replace %a %A %b %B date string by the day/month names for the given date tuple
         """
         dateformat = dateformat.replace("%a", common.getstring(30005).split("|")[
@@ -1519,10 +1519,10 @@ class Main:
         filename = self.args['filename']
 
         MPDB.collection_add_pic(namecollection, path, filename)
-        common.show_notification(common.getstring(30000), 
-                                 common.getstring(30154) + ' ' + namecollection, 
+        common.show_notification(common.getstring(30000),
+                                 common.getstring(30154) + ' ' + namecollection,
                                  3000, join(HOME, "icon.png"))
-        # xbmc.executebuiltin( "Notification(%s,%s %s,%s,%s)" % 
+        # xbmc.executebuiltin( "Notification(%s,%s %s,%s,%s)" %
         # (common.getstring(30000),common.getstring(30154),namecollection,3000,join(HOME,"icon.png")))
 
 
@@ -1650,7 +1650,7 @@ class Main:
             """SELECT COUNT(*) FROM Collections""")[0]
         Categories = MPDB.cur.request(
             """select count(distinct tf.idFile) from TagTypes tt, TagContents tc, TagsInFiles tf
-               where tt.idTagType = tc.idTagType and tc.idTagContent = tf.idTagContent 
+               where tt.idTagType = tc.idTagType and tc.idTagContent = tf.idTagContent
                and tt.TagTranslation = (select TagTranslation from TagTypes tti where tti.TagType='Category')""")[0]
         Folders = MPDB.cur.request(
             """SELECT COUNT(*) FROM Folders WHERE HasPics = 1""")[0]
@@ -1813,8 +1813,8 @@ class Main:
 
             try:
                 count = [row for row in MPDB.cur.request(
-                    """SELECT count(*) 
-                       FROM Files 
+                    """SELECT count(*)
+                       FROM Files
                        WHERE COALESCE(case ImageRating when '' then '0' else ImageRating end,'0') >= ?""",
                     (min_rating,))][0][0]
             except:
@@ -1824,18 +1824,18 @@ class Main:
 
             if MPDB.db_backend.lower() == 'mysql':
                 filelist = [row for row in MPDB.cur.request(
-                    """SELECT strPath, strFilename FROM Files 
-                       WHERE COALESCE(case ImageRating when '' then '0' else ImageRating end,'0') >= ? 
+                    """SELECT strPath, strFilename FROM Files
+                       WHERE COALESCE(case ImageRating when '' then '0' else ImageRating end,'0') >= ?
                        ORDER BY RAND() LIMIT %s OFFSET %s""" % (limit, offset), (min_rating,))]
             else:
                 if count < limit:
-                    select = """SELECT strPath, strFilename FROM Files 
-                                WHERE COALESCE(case ImageRating when '' then '0' else ImageRating end,'0') >= '%s' 
+                    select = """SELECT strPath, strFilename FROM Files
+                                WHERE COALESCE(case ImageRating when '' then '0' else ImageRating end,'0') >= '%s'
                                 ORDER BY RANDOM() LIMIT %s OFFSET %s""" % (min_rating, limit, offset)
                 else:
-                    select = """SELECT strPath, strFilename FROM Files 
-                                WHERE COALESCE(case ImageRating when '' then '0' else ImageRating end,'0') >= '%s' 
-                                AND RANDOM() %% %s 
+                    select = """SELECT strPath, strFilename FROM Files
+                                WHERE COALESCE(case ImageRating when '' then '0' else ImageRating end,'0') >= '%s'
+                                AND RANDOM() %% %s
                                 ORDER BY RANDOM() LIMIT %s OFFSET %s""" % (min_rating, modulo, limit, offset)
                 filelist = [row for row in MPDB.cur.request(select)]
                 # remove video files, if parameter 'onlypics' is set
@@ -1844,15 +1844,15 @@ class Main:
                         if utils.is_video(filename):
                             filelist.remove([path, filename])
                             #common.log("Main.show_pics", '%s' % str(filelist), xbmc.LOGINFO)
-                
+
         # we are showing pictures for a DATE selection
         elif self.args['method'] == "date":
             #   lister les images pour une date donnée
-            formatstring =  {"wo": "", 
-                             "year": "%Y", 
-                             "month": "%Y-%m", 
-                             "date": "%Y-%m-%d", 
-                             "": "%Y", 
+            formatstring =  {"wo": "",
+                             "year": "%Y",
+                             "month": "%Y-%m",
+                             "date": "%Y-%m-%d",
+                             "": "%Y",
                              "period": "%Y-%m-%d"}[self.args['period']]
 
             if self.args['period'] == "wo":
@@ -1869,14 +1869,14 @@ class Main:
 
             elif self.args['period'] == "period":
                 filelist = MPDB.search_between_dates(DateStart=(self.args['datestart'], formatstring),
-                                                     DateEnd=(self.args['dateend'], formatstring), 
+                                                     DateEnd=(self.args['dateend'], formatstring),
                                                      MinRating=min_rating)
             else:  # period not recognized, show whole pics : TODO check if useful and if it can not be optimized for something better
                 listyears = MPDB.get_years()
                 amini = min(listyears)
                 amaxi = max(listyears)
                 if amini and amaxi:
-                    filelist = MPDB.search_between_dates(("%s" % (amini), formatstring), 
+                    filelist = MPDB.search_between_dates(("%s" % (amini), formatstring),
                                                          ("%s" % (amaxi), formatstring),
                                                           MinRating=min_rating)
                 else:
@@ -1884,7 +1884,7 @@ class Main:
 
         # we are showing pictures for a TAG selection
         elif self.args['method'] == "wizard":
-            filelist = MPDB.filterwizard_result(self.args['kw'], self.args['nkw'], self.args['matchall'], 
+            filelist = MPDB.filterwizard_result(self.args['kw'], self.args['nkw'], self.args['matchall'],
                                                 self.args['start'], self.args['end'], min_rating)
 
         # we are showing pictures for a TAG selection
@@ -1899,11 +1899,11 @@ class Main:
             folderid =int(self.args['folderid'])
             listid = [folderid] + MPDB.all_children_of_folder(self.args['folderid'])
             _query = """
-                SELECT p.FullPath, f.strFilename FROM Files f, Folders p 
-                WHERE COALESCE(case ImageRating when '' then '0' else ImageRating end,'0') >= ? 
-                AND p.idFolder in ('%s') AND f.idFolder=p.idFolder 
-                ORDER BY ImageDateTime ASC 
-                LIMIT %s OFFSET %s""" % ("','".join([str(i) for i in listid]), limit, offset)            
+                SELECT p.FullPath, f.strFilename FROM Files f, Folders p
+                WHERE COALESCE(case ImageRating when '' then '0' else ImageRating end,'0') >= ?
+                AND p.idFolder in ('%s') AND f.idFolder=p.idFolder
+                ORDER BY ImageDateTime ASC
+                LIMIT %s OFFSET %s""" % ("','".join([str(i) for i in listid]), limit, offset)
             filelist = [row for row in MPDB.cur.request(_query, (min_rating,))]
 
         elif self.args['method'] == "collection":
@@ -1926,47 +1926,47 @@ class Main:
             # show pics taken within last month
             if MPDB.con.get_backend() == "mysql":
                 filelist = [row for row in MPDB.cur.request(
-                    """SELECT strPath,strFilename FROM Files 
-                       WHERE COALESCE(case ImageRating when '' then '0' else ImageRating end,'0') >= ? 
-                       AND datetime(ImageDateTime) BETWEEN SysDate() - INTERVAL 1 MONTH AND SysDate() 
-                       ORDER BY ImageDateTime ASC 
+                    """SELECT strPath,strFilename FROM Files
+                       WHERE COALESCE(case ImageRating when '' then '0' else ImageRating end,'0') >= ?
+                       AND datetime(ImageDateTime) BETWEEN SysDate() - INTERVAL 1 MONTH AND SysDate()
+                       ORDER BY ImageDateTime ASC
                        LIMIT %s OFFSET %s""" % (limit, offset), (min_rating,))]
             else:
                 filelist = [row for row in MPDB.cur.request(
-                    """SELECT strPath,strFilename FROM Files 
-                       WHERE COALESCE(case ImageRating when '' then '0' else ImageRating end,'0') >= ? 
-                       AND datetime(ImageDateTime) BETWEEN datetime('now','-1 months') AND datetime('now') 
-                       ORDER BY ImageDateTime ASC 
+                    """SELECT strPath,strFilename FROM Files
+                       WHERE COALESCE(case ImageRating when '' then '0' else ImageRating end,'0') >= ?
+                       AND datetime(ImageDateTime) BETWEEN datetime('now','-1 months') AND datetime('now')
+                       ORDER BY ImageDateTime ASC
                        LIMIT %s OFFSET %s""" % (limit, offset), (min_rating,))]
 
         elif self.args['method'] == "recentpicsdb":  # pictures added to database within x last days __OK
             numberofdays = common.getaddon_setting("recentnbdays")
             if MPDB.con.get_backend() == "mysql":
                 filelist = [row for row in MPDB.cur.request(
-                    """SELECT strPath,strFilename FROM Files 
-                       WHERE COALESCE(case ImageRating when '' then '0' else ImageRating end,'0') >= ? 
-                       AND DateAdded>=SysDate() - INTERVAL %s DAY 
-                       ORDER BY DateAdded ASC 
+                    """SELECT strPath,strFilename FROM Files
+                       WHERE COALESCE(case ImageRating when '' then '0' else ImageRating end,'0') >= ?
+                       AND DateAdded>=SysDate() - INTERVAL %s DAY
+                       ORDER BY DateAdded ASC
                        LIMIT %s OFFSET %s""" % (numberofdays, limit, offset), (min_rating,))]
             else:
                 filelist = [row for row in MPDB.cur.request(
-                    """SELECT strPath,strFilename FROM Files 
-                       WHERE COALESCE(case ImageRating when '' then '0' else ImageRating end,'0') >= ? 
-                       AND DateAdded >= datetime('now','start of day','-%s days') 
-                       ORDER BY DateAdded ASC 
+                    """SELECT strPath,strFilename FROM Files
+                       WHERE COALESCE(case ImageRating when '' then '0' else ImageRating end,'0') >= ?
+                       AND DateAdded >= datetime('now','start of day','-%s days')
+                       ORDER BY DateAdded ASC
                        LIMIT %s OFFSET %s""" % (numberofdays, limit, offset), (min_rating,))]
 
         elif self.args['method'] == "lastpicsshooted":  # X last pictures shooted __OK
-            select = """SELECT strPath,strFilename FROM Files 
-                        WHERE COALESCE(case ImageRating when '' then '0' else ImageRating end,'0') >= '%s' 
-                        AND ImageDateTime IS NOT NULL ORDER BY ImageDateTime DESC 
+            select = """SELECT strPath,strFilename FROM Files
+                        WHERE COALESCE(case ImageRating when '' then '0' else ImageRating end,'0') >= '%s'
+                        AND ImageDateTime IS NOT NULL ORDER BY ImageDateTime DESC
                         LIMIT %s""" % (min_rating, common.getaddon_setting('lastpicsnumber'))
             filelist = [row for row in MPDB.cur.request(select)]
 
         elif self.args['method'] == "videos":  # show all videos __OK
             filelist = [row for row in MPDB.cur.request(
-                """SELECT strPath,strFilename FROM Files 
-                WHERE ftype="video" ORDER BY ImageDateTime DESC 
+                """SELECT strPath,strFilename FROM Files
+                WHERE ftype="video" ORDER BY ImageDateTime DESC
                 LIMIT %s OFFSET %s""" % (limit, offset))]
 
         # on teste l'argumen 'viewmode'
@@ -2004,13 +2004,13 @@ class Main:
                                   dirname(destination), common.getstring(30065))  # Archive already exists, overwrite ?
                 if not ok:
                     # todo, ask for another name and if cancel, cancel the zip process as well
-                    common.show_notification(common.getstring(30000), common.getstring(30066), 
+                    common.show_notification(common.getstring(30000), common.getstring(30066),
                                              3000, join(HOME, "icon.png"))
                     # xbmc.executebuiltin("Notification(%s,%s,%s,%s)"%(common.getstring(30000),common.getstring(30066),3000,join(HOME,"icon.png")))
                     return
                 else:
                     pass  # user is ok to overwrite, let's go on
-            
+
             # open a tar file using gz compression
             tar = taropen(destination.encode(sys.getfilesystemencoding()), mode="w:gz")
             error = 0
@@ -2026,7 +2026,7 @@ class Main:
                 arcname = join(arcroot, filename).replace("\\", "/")
                 if picture == destination:  # sert à rien de zipper le zip lui même :D
                     continue
-                pDialog.update(int(100 * (compte / float(len(filelist)))), 
+                pDialog.update(int(100 * (compte / float(len(filelist)))),
                                common.getstring(30067), picture)  # adding picture to the archive
                 try:
                     # Dirty hack for windows. 7Zip uses codepage cp850
@@ -2039,7 +2039,7 @@ class Main:
                     common.log("show_pics >> zip",
                                "tar.gz compression error :", xbmc.LOGERROR)
                     error += 1
-                    common.log("show_pics >> zip", 
+                    common.log("show_pics >> zip",
                                "Error  %s" % arcname.encode(sys_encoding), xbmc.LOGERROR)
                     print_exc()
                 if pDialog.iscanceled():
@@ -2097,12 +2097,12 @@ class Main:
             i = 0.0
             cpt = 0
             for path, filename in filelist:
-                pDialog.update(int(100 * i / len(filelist)), 
+                pDialog.update(int(100 * i / len(filelist)),
                                common.getstring(30185) % join(path, filename),
                                dstpath)  # "Copying '%s' to :"
                 i = i + 1.0
                 if isfile(join(dstpath, filename)):
-                    ok = dialog.yesno(common.getstring(30000), 
+                    ok = dialog.yesno(common.getstring(30000),
                                       common.getstring(30186) % filename, dstpath,
                                       common.getstring(30187))  # File %s already exists in... overwrite ?
                     if not ok:
@@ -2112,11 +2112,11 @@ class Main:
             pDialog.update(100, common.getstring(30188),
                            dstpath)  # "Copying Finished !
             xbmc.sleep(1000)
-            common.show_notification(common.getstring(30000), 
+            common.show_notification(common.getstring(30000),
                                      common.getstring(30189) % (cpt, dstpath), 3000,
                                      join(HOME, "icon.png"))
             # show the folder which contain pictures exported
-            dialog.browse(2, common.getstring(30188), "files", "", True, False, dstpath) 
+            dialog.browse(2, common.getstring(30188), "files", "", True, False, dstpath)
             return
 
         if len(filelist) >= limit:
@@ -2138,7 +2138,7 @@ class Main:
                             "action=addtocollection&viewmode=view&path=%s&filename=%s\")" % \
                                 (common.quote_param(path), common.quote_param(filename))))
             # - del pic from collection :
-            if self.args['method'] == "collection": 
+            if self.args['method'] == "collection":
                 context.append((common.getstring(30151), # Remove from the collection
                                 "RunPlugin(\"%s?" % (sys.argv[0]) +
                                 "action=delfromcollection&viewmode=view&collect=%s&path=%s&filename=%s\")" % \
@@ -2216,7 +2216,7 @@ if __name__ == "__main__":
         "setproperties": ["set_properties()",],
         "slideshow": ["set_slideshow()",],
         "locate": ["xbmcgui.Dialog()",
-                    "dialog.browse(2, common.getstring(30071), 'files', '', True, False, m.args['filepath'])",],        
+                    "dialog.browse(2, common.getstring(30071), 'files', '', True, False, m.args['filepath'])",],
         "alea": ["pass",],
         "diapo": ["pass",],
     }
@@ -2249,5 +2249,5 @@ if __name__ == "__main__":
         MPDB.con.disconnect()
     except:
         pass
-        
+
     del MPDB
