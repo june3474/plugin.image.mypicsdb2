@@ -565,6 +565,9 @@ class Main:
             common.log("Main.show_folders", "children folder = %s" % childrenfolder)
             path = MPDB.cur.request_with_binds(
                 "SELECT FullPath FROM Folders WHERE idFolder = ?", (idchildren,))[0][0]
+            # path should end with os.sep to use kodi's folder thumbnails as is
+            if not path.endswith(os.sep):
+                path = path + os.sep
             count = MPDB.count_pics_in_folder(idchildren, min_rating)
             if count > 0:
                 name="%s (%s %s)" % (childrenfolder, count, common.getstring(30050))
@@ -587,7 +590,7 @@ class Main:
                                    contextmenu=contextmenu,
                                    total=len(childrenfolders),
                                    path=path)
-
+        # Now show pictures in the folder
         # maintenant, on liste les photos si il y en a, du dossier en cours
         if min_rating > 0:
             _query = """
